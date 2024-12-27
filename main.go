@@ -32,7 +32,7 @@ func init() {
 	}
 
 	// register event handlers
-	session.AddHandler(handlers.OnBotReady)
+	session.AddHandler(handlers.HandleOnBotReadyEvent)
 
 	// register slash commands
 	// session.AddHandler(commands.ArtCommand)
