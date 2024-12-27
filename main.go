@@ -16,7 +16,7 @@ var botConfig *config.BotConfig
 
 var session *discordgo.Session
 
-var registeredCommands = []*discordgo.ApplicationCommand{}
+var registrar *commands.SlashCommandRegistrar
 
 func init() {
 	if err := godotenv.Load(); err != nil {
@@ -38,13 +38,15 @@ func init() {
 	}
 
 	// register handlers
+	session.AddHandler(handlers.OnBotReadyHandler)
 	session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if handler, ok := handlers.CommandHandlers[i.ApplicationCommandData().Name]; ok {
 			handler(s, i)
 		}
 	})
 
-	session.AddHandler(handlers.OnBotReadyHandler)
+	// create command registrar
+	registrar = commands.NewSlashCommandRegistrar(*botConfig, session, commands.AllCommands)
 }
 
 func main() {
@@ -57,15 +59,11 @@ func main() {
 	defer session.Close()
 
 	// register commands
-	log.Printf("registering %d bot command(s)...\n", len(commands.AllCommands))
-	for _, botCommand := range commands.AllCommands {
-		cmd, err := session.ApplicationCommandCreate(session.State.User.ID, botConfig.TestGuildID, botCommand)
-		if err != nil {
-			log.Fatalf("- cannot register command %s: %v", botCommand.Name, err)
-		} else {
-			log.Printf("- registered command `/%s` for guild %s\n", cmd.Name, cmd.GuildID)
-		}
-		registeredCommands = append(registeredCommands, cmd)
+	log.Printf("registering %d bot command(s)\n", len(commands.AllCommands))
+	if err := registrar.RegisterCommands(); err != nil {
+		log.Fatalf("cannot register commands: %v", err)
+	} else {
+		log.Println("successfully registered commands")
 	}
 
 	stop := make(chan os.Signal, 1)
@@ -74,15 +72,11 @@ func main() {
 	<-stop
 
 	// cleanup
-	if botConfig.RemoveCommandsOnExit {
-		log.Printf("removing %d bot command(s)...\n", len(registeredCommands))
-		for _, command := range registeredCommands {
-			if err := session.ApplicationCommandDelete(session.State.User.ID, botConfig.TestGuildID, command.ID); err != nil {
-				log.Fatalf("- failed to remove command `/%s` from guild %s: %v", command.Name, botConfig.TestGuildID, err)
-			} else {
-				log.Printf("- removed command `/%s` from guild %s\n", command.Name, botConfig.TestGuildID)
-			}
-		}
+	if err := registrar.DeregisterCommands(); err != nil {
+		log.Fatalf("cannot deregister commands: %v", err)
+	} else {
+		log.Println("successfully deregistered commands")
 	}
+
 	log.Println("bot exited gracefully")
 }
