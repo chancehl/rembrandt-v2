@@ -6,20 +6,23 @@ import (
 	"os/signal"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/chancehl/rembrandt-v2/config"
 	"github.com/chancehl/rembrandt-v2/handlers"
 	"github.com/joho/godotenv"
 )
 
-var (
-	GuildID        = "927013651339157575"
-	RemoveCommands = true
-)
+var botConfig *config.BotConfig
 
 var session *discordgo.Session
 
 func init() {
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("error loading .env file: %v", err)
+	}
+
+	botConfig = &config.BotConfig{
+		TestGuildID:          os.Getenv("TEST_GUILD_ID"),
+		RemoveCommandsOnExit: os.Getenv("REMOVE_COMMANDS_ON_EXIT") == "true",
 	}
 }
 
@@ -44,12 +47,13 @@ func main() {
 	}
 	defer session.Close()
 
+	log.Printf("starting bot with config %+v\n", *botConfig)
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt)
 	log.Println("bot has started (press ctrl+c to exit)")
 	<-stop
 
-	if RemoveCommands {
+	if botConfig.RemoveCommandsOnExit {
 		log.Println("removing bot commands...")
 	}
 	log.Println("bot exited gracefully")
