@@ -8,7 +8,6 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/chancehl/rembrandt-v2/commands"
 	"github.com/chancehl/rembrandt-v2/config"
-	"github.com/chancehl/rembrandt-v2/handlers"
 	"github.com/joho/godotenv"
 )
 
@@ -16,7 +15,7 @@ var botConfig *config.BotConfig
 
 var session *discordgo.Session
 
-var registrar *commands.SlashCommandRegistrar
+var registrar *commands.CommandRefistrar
 
 func init() {
 	if err := godotenv.Load(); err != nil {
@@ -37,16 +36,8 @@ func init() {
 		log.Fatalf("invalid bot parameters: %v", err)
 	}
 
-	// register handlers
-	session.AddHandler(handlers.OnBotReadyHandler)
-	session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-		if handler, ok := handlers.CommandHandlers[i.ApplicationCommandData().Name]; ok {
-			handler(s, i)
-		}
-	})
-
 	// create command registrar
-	registrar = commands.NewSlashCommandRegistrar(*botConfig, session, commands.CommandDefinitions)
+	registrar = commands.NewCommandRegistrar(*botConfig, session)
 }
 
 func main() {
@@ -59,7 +50,7 @@ func main() {
 	defer session.Close()
 
 	// register commands
-	log.Printf("registering %d bot command(s)\n", len(commands.CommandDefinitions))
+	log.Printf("registering %d bot command(s)\n", len(commands.Commands))
 	if err := registrar.RegisterCommands(); err != nil {
 		log.Fatalf("cannot register commands: %v", err)
 	} else {

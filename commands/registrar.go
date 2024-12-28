@@ -7,37 +7,46 @@ import (
 	"github.com/chancehl/rembrandt-v2/config"
 )
 
-type CommandRegistrar interface {
-	RegisterCommands([]*discordgo.ApplicationCommand) error
-	DeregisterCommands([]*discordgo.ApplicationCommand) error
-}
+// type commandRegistrar interface {
+// 	RegisterCommands([]*discordgo.ApplicationCommand) error
+// 	DeregisterCommands([]*discordgo.ApplicationCommand) error
+// }
 
-type SlashCommandRegistrar struct {
+type CommandRefistrar struct {
 	config     config.BotConfig
 	session    *discordgo.Session
 	commands   []*discordgo.ApplicationCommand
+	handlers   map[string]func(*discordgo.Session, *discordgo.InteractionCreate)
 	registered []*discordgo.ApplicationCommand
 }
 
-func NewSlashCommandRegistrar(config config.BotConfig, session *discordgo.Session, commands []*discordgo.ApplicationCommand) *SlashCommandRegistrar {
-	return &SlashCommandRegistrar{
+func NewCommandRegistrar(config config.BotConfig, session *discordgo.Session) *CommandRefistrar {
+	return &CommandRefistrar{
 		config:     config,
 		session:    session,
-		commands:   commands,
+		commands:   Commands,
+		handlers:   Handlers,
 		registered: []*discordgo.ApplicationCommand{},
 	}
 }
 
-func (r *SlashCommandRegistrar) RegisterCommands() error {
-	for _, cmd := range r.commands {
-		if _, err := r.session.ApplicationCommandCreate(r.session.State.User.ID, r.config.TestGuildID, cmd); err != nil {
+func (r *CommandRefistrar) RegisterCommands() error {
+	for i := range r.commands {
+		cmd, err := r.session.ApplicationCommandCreate(r.session.State.User.ID, r.config.TestGuildID, r.commands[i])
+		if err != nil {
 			return fmt.Errorf("cannot register command %s: %v", cmd.Name, err)
 		}
+		r.session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+			if handler, ok := Handlers[i.ApplicationCommandData().Name]; ok {
+				handler(s, i)
+			}
+		})
+		r.registered = append(r.registered, cmd)
 	}
 	return nil
 }
 
-func (r *SlashCommandRegistrar) DeregisterCommands() error {
+func (r *CommandRefistrar) DeregisterCommands() error {
 	if r.config.RemoveCommandsOnExit {
 		for _, cmd := range r.registered {
 			err := r.session.ApplicationCommandDelete(r.session.State.User.ID, r.config.TestGuildID, cmd.ID)
