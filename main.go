@@ -46,7 +46,7 @@ func init() {
 	})
 
 	// create command registrar
-	registrar = commands.NewSlashCommandRegistrar(*botConfig, session, commands.AllCommands)
+	registrar = commands.NewSlashCommandRegistrar(*botConfig, session, commands.CommandDefinitions)
 }
 
 func main() {
@@ -59,7 +59,7 @@ func main() {
 	defer session.Close()
 
 	// register commands
-	log.Printf("registering %d bot command(s)\n", len(commands.AllCommands))
+	log.Printf("registering %d bot command(s)\n", len(commands.CommandDefinitions))
 	if err := registrar.RegisterCommands(); err != nil {
 		log.Fatalf("cannot register commands: %v", err)
 	} else {

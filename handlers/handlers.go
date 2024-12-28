@@ -6,7 +6,7 @@ import (
 )
 
 var CommandHandlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){
-	commands.ArtCommand.Name:       ArtCommandHandler,
-	commands.SearchArtCommand.Name: SearchArtCommandHandler,
-	commands.SubscribeCommand.Name: SubscribeCommandHandler,
+	commands.ArtCommandDefinition.Name:       ArtCommandHandler,
+	commands.SearchArtCommandDefinition.Name: SearchArtCommandHandler,
+	commands.SubscribeCommandDefinition.Name: SubscribeCommandHandler,
 }

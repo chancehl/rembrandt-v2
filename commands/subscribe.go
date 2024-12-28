@@ -2,7 +2,7 @@ package commands
 
 import "github.com/bwmarrin/discordgo"
 
-var SubscribeCommand = discordgo.ApplicationCommand{
+var SubscribeCommandDefinition = discordgo.ApplicationCommand{
 	Name:        "subscribe",
 	Description: "Susbcribes your discord for daily art updates",
 }
