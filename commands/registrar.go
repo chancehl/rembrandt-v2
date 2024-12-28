@@ -30,6 +30,7 @@ func NewCommandRegistrar(config config.BotConfig, session *discordgo.Session) *C
 	}
 }
 
+// Registers commands on bot startup
 func (r *CommandRefistrar) RegisterCommands() error {
 	for i := range r.commands {
 		cmd, err := r.session.ApplicationCommandCreate(r.session.State.User.ID, r.config.TestGuildID, r.commands[i])
@@ -46,6 +47,7 @@ func (r *CommandRefistrar) RegisterCommands() error {
 	return nil
 }
 
+// De-registers commands on bot exit
 func (r *CommandRefistrar) DeregisterCommands() error {
 	if r.config.RemoveCommandsOnExit {
 		for _, cmd := range r.registered {
