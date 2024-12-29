@@ -7,6 +7,7 @@ import (
 	"github.com/chancehl/rembrandt-v2/internal/utils/interaction"
 )
 
+// `/subscribe` command definition
 var SubscribeCommand = discordgo.ApplicationCommand{
 	Name:        "subscribe",
 	Description: "Susbcribes your discord for daily art updates",
@@ -20,6 +21,7 @@ var SubscribeCommand = discordgo.ApplicationCommand{
 	},
 }
 
+// `/subscribe` command definition
 func SubscribeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	channel, _ := interaction.GetOption(i.Interaction, "channel")
 

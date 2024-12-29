@@ -4,11 +4,13 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// `/art` command definition
 var ArtCommand = discordgo.ApplicationCommand{
 	Name:        "art",
 	Description: "Get a random piece of art",
 }
 
+// `/art` command handler
 func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,

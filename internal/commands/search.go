@@ -7,6 +7,7 @@ import (
 	"github.com/chancehl/rembrandt-v2/internal/utils/interaction"
 )
 
+// `/search` command definition
 var SearchCommand = discordgo.ApplicationCommand{
 	Name:        "search",
 	Description: "Searches the MET for a piece of art",
@@ -20,6 +21,7 @@ var SearchCommand = discordgo.ApplicationCommand{
 	},
 }
 
+// `/search` command handler
 func SearchCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	query, _ := interaction.GetOption(i.Interaction, "query")
 
