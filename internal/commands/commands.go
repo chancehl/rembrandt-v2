@@ -11,7 +11,7 @@ var Commands = []*discordgo.ApplicationCommand{
 }
 
 var Handlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){
-	"art":        ArtCommandHandler,
-	"search-art": SearchCommandHandler,
-	"subscribe":  SubscribeCommandHandler,
+	ArtCommand.Name:       ArtCommandHandler,
+	SearchCommand.Name:    SearchCommandHandler,
+	SubscribeCommand.Name: SubscribeCommandHandler,
 }

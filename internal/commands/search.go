@@ -1,12 +1,15 @@
 package commands
 
 import (
+	"fmt"
+
 	"github.com/bwmarrin/discordgo"
+	"github.com/chancehl/rembrandt-v2/internal/helpers/interaction"
 	"github.com/chancehl/rembrandt-v2/internal/helpers/responses"
 )
 
 var SearchCommand = discordgo.ApplicationCommand{
-	Name:        "search-art",
+	Name:        "search",
 	Description: "Searches the MET for a piece of art",
 	Options: []*discordgo.ApplicationCommandOption{
 		{
@@ -19,5 +22,7 @@ var SearchCommand = discordgo.ApplicationCommand{
 }
 
 func SearchCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
-	responses.RespondWithString(s, i, "Okay here's the art you searched for!")
+	query, _ := interaction.GetOption(i.Interaction, "query")
+	content := fmt.Sprintf("You queried for: %s", query.StringValue())
+	responses.RespondWithString(s, i.Interaction, content)
 }
