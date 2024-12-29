@@ -23,6 +23,5 @@ var SearchCommand = discordgo.ApplicationCommand{
 
 func SearchCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	query, _ := interaction.GetOption(i.Interaction, "query")
-	content := fmt.Sprintf("You queried for: %s", query.StringValue())
-	responses.RespondWithString(s, i.Interaction, content)
+	responses.RespondWithString(s, i.Interaction, fmt.Sprintf("You queried for: %s", query.StringValue()))
 }
