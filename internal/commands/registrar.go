@@ -5,7 +5,6 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/chancehl/rembrandt-v2/config"
-	"github.com/chancehl/rembrandt-v2/internal/models"
 )
 
 // type commandRegistrar interface {
@@ -17,8 +16,8 @@ type CommandRegistrar struct {
 	config     config.BotConfig
 	session    *discordgo.Session
 	commands   []*discordgo.ApplicationCommand
-	handlers   map[string]func(*models.BotSession, *models.BotInteraction)
 	registered []*discordgo.ApplicationCommand
+	handlers   map[string]func(*discordgo.Session, *discordgo.InteractionCreate)
 }
 
 func NewCommandRegistrar(config config.BotConfig, session *discordgo.Session) *CommandRegistrar {
@@ -33,16 +32,14 @@ func NewCommandRegistrar(config config.BotConfig, session *discordgo.Session) *C
 
 // Registers commands on bot startup
 func (r *CommandRegistrar) RegisterCommands() error {
-	for i := range r.commands {
-		cmd, err := r.session.ApplicationCommandCreate(r.session.State.User.ID, r.config.TestGuildID, r.commands[i])
+	for idx := range r.commands {
+		cmd, err := r.session.ApplicationCommandCreate(r.session.State.User.ID, r.config.TestGuildID, r.commands[idx])
 		if err != nil {
 			return fmt.Errorf("cannot register command %s: %v", cmd.Name, err)
 		}
 		r.session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			if handler, ok := Handlers[i.ApplicationCommandData().Name]; ok {
-				session := models.NewBotSession(s)
-				interaction := models.NewBotInteraction(i)
-				handler(session, interaction)
+				handler(s, i)
 			}
 		})
 		r.registered = append(r.registered, cmd)

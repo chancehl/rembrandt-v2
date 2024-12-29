@@ -1,16 +1,8 @@
-package models
+package responses
 
 import "github.com/bwmarrin/discordgo"
 
-type BotSession struct {
-	*discordgo.Session
-}
-
-func NewBotSession(s *discordgo.Session) *BotSession {
-	return &BotSession{s}
-}
-
-func (s *BotSession) RespondToInteractionWithString(i *BotInteraction, content string) {
+func RespondWithString(s *discordgo.Session, i *discordgo.InteractionCreate, content string) {
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
@@ -19,7 +11,7 @@ func (s *BotSession) RespondToInteractionWithString(i *BotInteraction, content s
 	})
 }
 
-func (s *BotSession) RespondToInteractionWithEmbed(i *BotInteraction, embeds []*discordgo.MessageEmbed) {
+func RespondWithEmbed(s *discordgo.Session, i *discordgo.InteractionCreate, embeds []*discordgo.MessageEmbed) {
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
