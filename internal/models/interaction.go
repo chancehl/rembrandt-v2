@@ -7,10 +7,10 @@ import (
 )
 
 type BotInteraction struct {
-	*discordgo.Interaction
+	*discordgo.InteractionCreate
 }
 
-func NewBotInteraction(i *discordgo.Interaction) *BotInteraction {
+func NewBotInteraction(i *discordgo.InteractionCreate) *BotInteraction {
 	return &BotInteraction{i}
 }
 

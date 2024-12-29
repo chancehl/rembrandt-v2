@@ -1,6 +1,9 @@
 package commands
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"github.com/bwmarrin/discordgo"
+	"github.com/chancehl/rembrandt-v2/internal/models"
+)
 
 var SearchCommand = discordgo.ApplicationCommand{
 	Name:        "search-art",
@@ -15,11 +18,6 @@ var SearchCommand = discordgo.ApplicationCommand{
 	},
 }
 
-func SearchCommandHandler(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
-	session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "Okay here's art that I found matching your query",
-		},
-	})
+func SearchCommandHandler(session *models.BotSession, interaction *models.BotInteraction) {
+	session.RespondToInteractionWithString(interaction, "Okay, here's the art you searched for")
 }

@@ -22,15 +22,8 @@ var SubscribeCommand = discordgo.ApplicationCommand{
 	},
 }
 
-func SubscribeCommandHandler(session *discordgo.Session, interactionCreator *discordgo.InteractionCreate) {
-	botInteraction := models.NewBotInteraction(interactionCreator.Interaction)
-
-	channelOption, _ := botInteraction.GetOption(ChannelOptionName)
-
-	session.InteractionRespond(botInteraction.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: fmt.Sprintf("Subscribed channel %v to daily art updates", channelOption.ChannelValue(session).Name),
-		},
-	})
+func SubscribeCommandHandler(session *models.BotSession, interaction *models.BotInteraction) {
+	channelOption, _ := interaction.GetOption(ChannelOptionName)
+	content := fmt.Sprintf("Subscribed channel %v to daily art updates", channelOption.ChannelValue(session.Session).Name)
+	session.RespondToInteractionWithString(interaction, content)
 }
