@@ -6,8 +6,8 @@ import (
 	"os/signal"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/commands"
 	"github.com/chancehl/rembrandt-v2/config"
+	"github.com/chancehl/rembrandt-v2/internal/commands"
 	"github.com/joho/godotenv"
 )
 
@@ -15,7 +15,7 @@ var botConfig *config.BotConfig
 
 var session *discordgo.Session
 
-var registrar *commands.CommandRefistrar
+var registrar *commands.CommandRegistrar
 
 func init() {
 	if err := godotenv.Load(); err != nil {

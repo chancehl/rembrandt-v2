@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/utils"
+	"github.com/chancehl/rembrandt-v2/internal/parsers"
 )
 
 const ChannelOptionName = "channel"
@@ -23,12 +23,12 @@ var SubscribeCommand = discordgo.ApplicationCommand{
 }
 
 func SubscribeCommandHandler(session *discordgo.Session, interaction *discordgo.InteractionCreate) {
-	options := utils.CreateOptionMap(interaction)
+	channelOption, _ := parsers.GetOption(interaction.Interaction, ChannelOptionName)
 
 	session.InteractionRespond(interaction.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
-			Content: fmt.Sprintf("Subscribed channel %s to daily art updates", options[ChannelOptionName].Name),
+			Content: fmt.Sprintf("Subscribed channel %v to daily art updates", channelOption.ChannelValue(session).Name),
 		},
 	})
 }

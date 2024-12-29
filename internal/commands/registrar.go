@@ -12,7 +12,7 @@ import (
 // 	DeregisterCommands([]*discordgo.ApplicationCommand) error
 // }
 
-type CommandRefistrar struct {
+type CommandRegistrar struct {
 	config     config.BotConfig
 	session    *discordgo.Session
 	commands   []*discordgo.ApplicationCommand
@@ -20,8 +20,8 @@ type CommandRefistrar struct {
 	registered []*discordgo.ApplicationCommand
 }
 
-func NewCommandRegistrar(config config.BotConfig, session *discordgo.Session) *CommandRefistrar {
-	return &CommandRefistrar{
+func NewCommandRegistrar(config config.BotConfig, session *discordgo.Session) *CommandRegistrar {
+	return &CommandRegistrar{
 		config:     config,
 		session:    session,
 		commands:   Commands,
@@ -31,7 +31,7 @@ func NewCommandRegistrar(config config.BotConfig, session *discordgo.Session) *C
 }
 
 // Registers commands on bot startup
-func (r *CommandRefistrar) RegisterCommands() error {
+func (r *CommandRegistrar) RegisterCommands() error {
 	for i := range r.commands {
 		cmd, err := r.session.ApplicationCommandCreate(r.session.State.User.ID, r.config.TestGuildID, r.commands[i])
 		if err != nil {
@@ -48,7 +48,7 @@ func (r *CommandRefistrar) RegisterCommands() error {
 }
 
 // De-registers commands on bot exit
-func (r *CommandRefistrar) DeregisterCommands() error {
+func (r *CommandRegistrar) DeregisterCommands() error {
 	if r.config.RemoveCommandsOnExit {
 		for _, cmd := range r.registered {
 			err := r.session.ApplicationCommandDelete(r.session.State.User.ID, r.config.TestGuildID, cmd.ID)

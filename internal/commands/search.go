@@ -5,6 +5,14 @@ import "github.com/bwmarrin/discordgo"
 var SearchCommand = discordgo.ApplicationCommand{
 	Name:        "search-art",
 	Description: "Searches the MET for a piece of art",
+	Options: []*discordgo.ApplicationCommandOption{
+		{
+			Name:        "query",
+			Description: "The search query",
+			Type:        discordgo.ApplicationCommandOptionString,
+			Required:    true,
+		},
+	},
 }
 
 func SearchCommandHandler(session *discordgo.Session, interaction *discordgo.InteractionCreate) {

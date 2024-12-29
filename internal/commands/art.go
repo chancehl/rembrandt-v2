@@ -12,7 +12,17 @@ func ArtCommandHandler(session *discordgo.Session, interaction *discordgo.Intera
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Embeds: []*discordgo.MessageEmbed{
-				{Title: "Art Title", Description: "Art Description"},
+				{
+					Title:       "Art Title",
+					Description: "Art Description",
+					Fields: []*discordgo.MessageEmbedField{
+						{
+							Name:   "Artist",
+							Value:  "Foo",
+							Inline: false,
+						},
+					},
+				},
 			},
 		},
 	})
