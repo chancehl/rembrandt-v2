@@ -4,8 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/internal/helpers/interaction"
-	"github.com/chancehl/rembrandt-v2/internal/helpers/responses"
+	"github.com/chancehl/rembrandt-v2/internal/utils/interaction"
 )
 
 var SearchCommand = discordgo.ApplicationCommand{
@@ -23,5 +22,11 @@ var SearchCommand = discordgo.ApplicationCommand{
 
 func SearchCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	query, _ := interaction.GetOption(i.Interaction, "query")
-	responses.RespondWithString(s, i.Interaction, fmt.Sprintf("You queried for: %s", query.StringValue()))
+
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: fmt.Sprintf("You queried for: %s", query.StringValue()),
+		},
+	})
 }

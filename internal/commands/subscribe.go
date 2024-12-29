@@ -4,8 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/internal/helpers/interaction"
-	"github.com/chancehl/rembrandt-v2/internal/helpers/responses"
+	"github.com/chancehl/rembrandt-v2/internal/utils/interaction"
 )
 
 var SubscribeCommand = discordgo.ApplicationCommand{
@@ -23,6 +22,11 @@ var SubscribeCommand = discordgo.ApplicationCommand{
 
 func SubscribeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	channel, _ := interaction.GetOption(i.Interaction, "channel")
-	content := fmt.Sprintf("I should subscribe channel %s to daily updates", channel.ChannelValue(s).Name)
-	responses.RespondWithString(s, i.Interaction, content)
+
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Content: fmt.Sprintf("I should subscribe channel %s to daily updates", channel.ChannelValue(s).Name),
+		},
+	})
 }
