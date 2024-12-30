@@ -6,18 +6,19 @@ import (
 	"os/signal"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/config"
+	"github.com/chancehl/rembrandt-v2/internal/clients/met"
 	"github.com/chancehl/rembrandt-v2/internal/commands"
+	"github.com/chancehl/rembrandt-v2/internal/config"
 	"github.com/joho/godotenv"
 )
 
 var botConfig *config.BotConfig
-
 var session *discordgo.Session
-
 var registrar *commands.CommandRegistrar
+var apiClient *met.MetropolitanMuseumOfArtAPIClient
 
 func init() {
+	// load dot env variables
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("error loading .env file: %v", err)
 	}
@@ -26,9 +27,7 @@ func init() {
 		TestGuildID:          os.Getenv("TEST_GUILD_ID"),
 		RemoveCommandsOnExit: os.Getenv("REMOVE_COMMANDS_ON_EXIT") == "true",
 	}
-}
 
-func init() {
 	// create bot session
 	var err error
 	session, err = discordgo.New("Bot " + os.Getenv("TOKEN"))
@@ -38,6 +37,9 @@ func init() {
 
 	// create command registrar
 	registrar = commands.NewCommandRegistrar(*botConfig, session)
+
+	// create MET api client
+	apiClient = met.NewMetropolianMuseumOfArtAPIClient()
 }
 
 func main() {
@@ -48,6 +50,13 @@ func main() {
 		log.Fatalf("cannot open the session: %v", err)
 	}
 	defer session.Close()
+
+	log.Println("caching MET API object IDs...")
+	resp, err := apiClient.GetObjectIDs()
+	if err != nil {
+		log.Fatalf("could not fetch MET object ids during bot startup: %v", err)
+	}
+	log.Printf("fetched %d object IDs to cache", resp.Total)
 
 	// register commands
 	log.Printf("registering %d bot command(s)\n", len(commands.Commands))

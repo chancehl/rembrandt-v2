@@ -13,8 +13,8 @@ type MetropolitanMuseumOfArtAPIClient struct {
 	collection string
 }
 
-func NewMetropolianMuseumOfArtAPIClient() MetropolitanMuseumOfArtAPIClient {
-	return MetropolitanMuseumOfArtAPIClient{
+func NewMetropolianMuseumOfArtAPIClient() *MetropolitanMuseumOfArtAPIClient {
+	return &MetropolitanMuseumOfArtAPIClient{
 		base:       "https://collectionapi.metmuseum.org",
 		version:    "v1",
 		collection: "public/collection",
