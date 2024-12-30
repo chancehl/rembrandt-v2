@@ -9,8 +9,9 @@ import (
 
 // `/subscribe` command definition
 var SubscribeCommand = discordgo.ApplicationCommand{
-	Name:        "subscribe",
-	Description: "Susbcribes your discord for daily art updates",
+	Name:                     "subscribe",
+	Description:              "Susbcribes your discord for daily art updates",
+	DefaultMemberPermissions: &manageServerPermission,
 	Options: []*discordgo.ApplicationCommandOption{
 		{
 			Name:        "channel",

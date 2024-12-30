@@ -3,8 +3,9 @@ package commands
 import "github.com/bwmarrin/discordgo"
 
 var UnsubscribeCommand = discordgo.ApplicationCommand{
-	Name:        "unsubscribe",
-	Description: "Unsubscribes your guild from daily art updates",
+	Name:                     "unsubscribe",
+	Description:              "Unsubscribes your guild from daily art updates",
+	DefaultMemberPermissions: &manageServerPermission,
 }
 
 func UnsubscribeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {

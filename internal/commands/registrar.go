@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/config"
+	"github.com/chancehl/rembrandt-v2/internal/config"
 )
 
 // type commandRegistrar interface {
