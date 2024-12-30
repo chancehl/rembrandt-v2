@@ -51,7 +51,7 @@ func main() {
 	}
 	defer session.Close()
 
-	log.Println("caching MET API object IDs...")
+	log.Println("caching MET API object IDs")
 	resp, err := apiClient.GetObjectIDs()
 	if err != nil {
 		log.Fatalf("could not fetch MET object ids during bot startup: %v", err)
