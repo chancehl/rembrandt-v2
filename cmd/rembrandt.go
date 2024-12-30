@@ -6,7 +6,7 @@ import (
 	"os/signal"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/internal/clients/met"
+	"github.com/chancehl/rembrandt-v2/internal/clients/api/met"
 	"github.com/chancehl/rembrandt-v2/internal/commands"
 	"github.com/chancehl/rembrandt-v2/internal/config"
 	"github.com/joho/godotenv"
