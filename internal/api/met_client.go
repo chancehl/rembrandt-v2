@@ -1,28 +1,32 @@
-package met
+package api
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
+
+	"github.com/chancehl/rembrandt-v2/internal/cache"
 )
 
-type MetropolitanMuseumOfArtAPIClient struct {
+type METApiClient struct {
 	version    string
 	base       string
 	collection string
+	cache      *cache.InMemoryCache
 }
 
-func NewMetropolianMuseumOfArtAPIClient() *MetropolitanMuseumOfArtAPIClient {
-	return &MetropolitanMuseumOfArtAPIClient{
+func NewMETApiClient(cache *cache.InMemoryCache) *METApiClient {
+	return &METApiClient{
 		base:       "https://collectionapi.metmuseum.org",
 		version:    "v1",
 		collection: "public/collection",
+		cache:      cache,
 	}
 }
 
 // Gets all ObjectIDs in the MET API collection
-func (c *MetropolitanMuseumOfArtAPIClient) GetObjectIDs() (*GetObjectsResponse, error) {
+func (c *METApiClient) GetObjectIDs() (*GetObjectsResponse, error) {
 	url, _ := url.JoinPath(c.base, []string{c.collection, c.version, "objects"}...)
 
 	resp, err := http.Get(url)
@@ -40,7 +44,7 @@ func (c *MetropolitanMuseumOfArtAPIClient) GetObjectIDs() (*GetObjectsResponse, 
 }
 
 // Gets a MET object by ID
-func (c *MetropolitanMuseumOfArtAPIClient) GetObjectByID(id string) (*GetObjectResponse, error) {
+func (c *METApiClient) GetObjectByID(id string) (*GetObjectResponse, error) {
 	url, _ := url.JoinPath(c.base, []string{c.collection, c.version, "objects", id}...)
 
 	resp, err := http.Get(url)
@@ -58,7 +62,7 @@ func (c *MetropolitanMuseumOfArtAPIClient) GetObjectByID(id string) (*GetObjectR
 }
 
 // Searches for objects matching query in MET API
-func (c *MetropolitanMuseumOfArtAPIClient) SearchForObject(query string) (*GetObjectsResponse, error) {
+func (c *METApiClient) SearchForObject(query string) (*GetObjectsResponse, error) {
 	url, _ := url.JoinPath(c.base, []string{c.collection, c.version, "search"}...)
 	urlWithQueryParams := fmt.Sprintf("%s?hasImages=true&q=%s", url, query)
 

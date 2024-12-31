@@ -6,16 +6,20 @@ import (
 	"os/signal"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/internal/clients/api/met"
+	"github.com/chancehl/rembrandt-v2/internal/api"
+	"github.com/chancehl/rembrandt-v2/internal/cache"
 	"github.com/chancehl/rembrandt-v2/internal/commands"
 	"github.com/chancehl/rembrandt-v2/internal/config"
 	"github.com/joho/godotenv"
 )
 
-var botConfig *config.BotConfig
-var session *discordgo.Session
-var registrar *commands.CommandRegistrar
-var apiClient *met.MetropolitanMuseumOfArtAPIClient
+var (
+	botConfig     *config.BotConfig
+	session       *discordgo.Session
+	registrar     *commands.CommandRegistrar
+	metApiClient  *api.METApiClient
+	inMemoryCache *cache.InMemoryCache
+)
 
 func init() {
 	// load dot env variables
@@ -38,8 +42,11 @@ func init() {
 	// create command registrar
 	registrar = commands.NewCommandRegistrar(*botConfig, session)
 
+	// create in memory cache
+	inMemoryCache = cache.NewInMemoryCache()
+
 	// create MET api client
-	apiClient = met.NewMetropolianMuseumOfArtAPIClient()
+	metApiClient = api.NewMETApiClient(inMemoryCache)
 }
 
 func main() {
@@ -52,7 +59,7 @@ func main() {
 	defer session.Close()
 
 	log.Println("caching MET API object IDs")
-	resp, err := apiClient.GetObjectIDs()
+	resp, err := metApiClient.GetObjectIDs()
 	if err != nil {
 		log.Fatalf("could not fetch MET object ids during bot startup: %v", err)
 	}

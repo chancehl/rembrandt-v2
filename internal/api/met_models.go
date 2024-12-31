@@ -1,4 +1,4 @@
-package met
+package api
 
 type GetObjectsResponse struct {
 	Total     int   `json:"total"`
