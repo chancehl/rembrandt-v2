@@ -58,13 +58,6 @@ func main() {
 	}
 	defer session.Close()
 
-	log.Println("caching MET API object IDs")
-	resp, err := metApiClient.GetObjectIDs()
-	if err != nil {
-		log.Fatalf("could not fetch MET object ids during bot startup: %v", err)
-	}
-	log.Printf("fetched %d object IDs to cache", resp.Total)
-
 	// register commands
 	log.Printf("registering %d bot command(s)\n", len(commands.Commands))
 	if err := registrar.RegisterCommands(); err != nil {
