@@ -3,6 +3,8 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -12,8 +14,10 @@ import (
 )
 
 const (
-	ObjectIDsCacheKey = "objectIDs"
-	ObjectIDsTTL      = time.Hour
+	ObjectIDsCacheKey        = "objectIDs"
+	ObjectIDsTTL             = time.Hour
+	InvalidObjectIDsCacheKey = "invalidObjectIDs"
+	InvalidObjectIDsTTL      = time.Hour * 24 // TODO: make this not expire
 )
 
 type METAPIClient struct {
@@ -96,4 +100,44 @@ func (c *METAPIClient) SearchForObject(query string) (*GetObjectsResponse, error
 	}
 
 	return &getObjectsResponse, nil
+}
+
+// GetRandomObject retrieves a random object from the MET API that has a primary image.
+func (c *METAPIClient) GetRandomObject() (*GetObjectResponse, error) {
+	objectIDData, err := c.GetObjectIDs()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get object IDs: %w", err)
+	}
+
+	randomObjectID := objectIDData.ObjectIDs[rand.Intn(len(objectIDData.ObjectIDs))]
+
+	objectData, err := c.GetObjectByID(randomObjectID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get object by ID %d: %w", randomObjectID, err)
+	}
+
+	if objectData.PrimaryImage == "" {
+		log.Printf("Object ID %d has no primary image, updating cache and retrying", randomObjectID)
+		log.Println(c.cache.Get(InvalidObjectIDsCacheKey))
+		c.updateInvalidObjectIDsCache(randomObjectID)
+
+		return c.GetRandomObject()
+	}
+
+	return objectData, nil
+}
+
+// updateInvalidObjectIDsCache adds the given object ID to the cache of invalid IDs.
+func (c *METAPIClient) updateInvalidObjectIDsCache(objectID int) {
+	var invalidIDs []int
+	if cachedInvalidObjectIDs, exists := c.cache.Get(InvalidObjectIDsCacheKey); exists {
+		if ids, ok := cachedInvalidObjectIDs.([]int); ok {
+			invalidIDs = append(ids, objectID)
+		} else {
+			log.Fatalf("Cache data type error: expected []int")
+		}
+	} else {
+		invalidIDs = append(invalidIDs, objectID)
+	}
+	c.cache.Set(InvalidObjectIDsCacheKey, invalidIDs, InvalidObjectIDsTTL)
 }

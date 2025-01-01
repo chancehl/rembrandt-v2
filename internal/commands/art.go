@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"math/rand"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/chancehl/rembrandt-v2/internal/api"
@@ -16,10 +15,7 @@ var ArtCommand = discordgo.ApplicationCommand{
 
 // `/art` command handler
 func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, c *api.METAPIClient) {
-	objectIDData, _ := c.GetObjectIDs()
-	randomObjectID := objectIDData.ObjectIDs[rand.Intn(objectIDData.Total)]
-
-	objectData, _ := c.GetObjectByID(randomObjectID)
+	objectData, _ := c.GetRandomObject()
 
 	fields := []*discordgo.MessageEmbedField{}
 
@@ -66,7 +62,7 @@ func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, c *
 	if objectData.ObjectURL != "" {
 		fields = append(fields, &discordgo.MessageEmbedField{
 			Name:   "URL",
-			Value:  fmt.Sprintf("[View on The Met](%s)", objectData.ObjectURL),
+			Value:  fmt.Sprintf("[View on The Met website](%s)", objectData.ObjectURL),
 			Inline: false,
 		})
 	}
