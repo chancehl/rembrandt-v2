@@ -5,10 +5,8 @@ import (
 	"time"
 )
 
-type InMemoryCacheItemValue interface{}
-
 type InMemoryCacheItem struct {
-	value  InMemoryCacheItemValue
+	value  interface{}
 	expiry time.Time
 }
 
@@ -25,7 +23,7 @@ func NewInMemoryCache() *InMemoryCache {
 }
 
 // Sets a cached value
-func (c *InMemoryCache) Set(key string, value InMemoryCacheItemValue, ttl time.Duration) {
+func (c *InMemoryCache) Set(key string, value interface{}, ttl time.Duration) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -36,8 +34,9 @@ func (c *InMemoryCache) Set(key string, value InMemoryCacheItemValue, ttl time.D
 }
 
 // Gets a cached value
+//
 // Note: if the user requests an item that is past the expiry it will be deleted from the cache
-func (c *InMemoryCache) Get(key string) (InMemoryCacheItemValue, bool) {
+func (c *InMemoryCache) Get(key string) (interface{}, bool) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 

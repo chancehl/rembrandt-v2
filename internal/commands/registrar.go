@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/chancehl/rembrandt-v2/internal/api"
 	"github.com/chancehl/rembrandt-v2/internal/config"
 )
 
@@ -12,21 +13,25 @@ import (
 // 	DeregisterCommands([]*discordgo.ApplicationCommand) error
 // }
 
+type HandlerFunc func(s *discordgo.Session, i *discordgo.InteractionCreate, mc *api.METAPIClient)
+
 type CommandRegistrar struct {
 	config     config.BotConfig
 	session    *discordgo.Session
 	commands   []*discordgo.ApplicationCommand
 	registered []*discordgo.ApplicationCommand
-	handlers   map[string]func(*discordgo.Session, *discordgo.InteractionCreate)
+	handlers   map[string]HandlerFunc
+	client     *api.METAPIClient
 }
 
-func NewCommandRegistrar(config config.BotConfig, session *discordgo.Session) *CommandRegistrar {
+func NewCommandRegistrar(config config.BotConfig, session *discordgo.Session, client *api.METAPIClient) *CommandRegistrar {
 	return &CommandRegistrar{
 		config:     config,
 		session:    session,
 		commands:   Commands,
 		handlers:   Handlers,
 		registered: []*discordgo.ApplicationCommand{},
+		client:     client,
 	}
 }
 
@@ -37,13 +42,13 @@ func (r *CommandRegistrar) RegisterCommands() error {
 		if err != nil {
 			return fmt.Errorf("cannot register command %s: %v", cmd.Name, err)
 		}
-		r.session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
-			if handler, ok := Handlers[i.ApplicationCommandData().Name]; ok {
-				handler(s, i)
-			}
-		})
 		r.registered = append(r.registered, cmd)
 	}
+	r.session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
+		if handler, ok := Handlers[i.ApplicationCommandData().Name]; ok {
+			handler(s, i, r.client)
+		}
+	})
 	return nil
 }
 

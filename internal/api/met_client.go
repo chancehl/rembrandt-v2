@@ -5,8 +5,14 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/chancehl/rembrandt-v2/internal/cache"
+)
+
+const (
+	ObjectIDsCacheKey = "objectIDs"
+	ObjectIDsTTL      = time.Hour
 )
 
 type METAPIClient struct {
@@ -27,6 +33,14 @@ func NewMETAPIClient(cache *cache.InMemoryCache) *METAPIClient {
 
 // Gets all ObjectIDs in the MET API collection
 func (c *METAPIClient) GetObjectIDs() (*GetObjectsResponse, error) {
+	if cachedObjectIDs, exists := c.cache.Get(ObjectIDsCacheKey); exists {
+		if objectIDs, ok := cachedObjectIDs.([]int); ok {
+			return &GetObjectsResponse{Total: len(objectIDs), ObjectIDs: objectIDs}, nil
+		} else {
+			return nil, fmt.Errorf("could not convert cached objectIDs to []int")
+		}
+	}
+
 	url, _ := url.JoinPath(c.base, []string{c.collection, c.version, "objects"}...)
 
 	resp, err := http.Get(url)
@@ -39,6 +53,9 @@ func (c *METAPIClient) GetObjectIDs() (*GetObjectsResponse, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&getObjectsResponse); err != nil {
 		return nil, fmt.Errorf("could not deserialize MET API body: %v", err)
 	}
+
+	// populate cache
+	c.cache.Set(ObjectIDsCacheKey, getObjectsResponse.ObjectIDs, ObjectIDsTTL)
 
 	return &getObjectsResponse, nil
 }

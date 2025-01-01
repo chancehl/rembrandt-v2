@@ -11,7 +11,7 @@ var Commands = []*discordgo.ApplicationCommand{
 	&UnsubscribeCommand,
 }
 
-var Handlers = map[string]func(*discordgo.Session, *discordgo.InteractionCreate){
+var Handlers = map[string]HandlerFunc{
 	ArtCommand.Name:         ArtCommandHandler,
 	SearchCommand.Name:      SearchCommandHandler,
 	SubscribeCommand.Name:   SubscribeCommandHandler,

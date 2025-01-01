@@ -39,14 +39,14 @@ func init() {
 		log.Fatalf("invalid bot parameters: %v", err)
 	}
 
-	// create command registrar
-	registrar = commands.NewCommandRegistrar(*botConfig, session)
-
 	// create in memory cache
 	inMemoryCache = cache.NewInMemoryCache()
 
 	// create MET api client
 	metApiClient = api.NewMETAPIClient(inMemoryCache)
+
+	// create command registrar
+	registrar = commands.NewCommandRegistrar(*botConfig, session, metApiClient)
 }
 
 func main() {
@@ -57,6 +57,14 @@ func main() {
 		log.Fatalf("cannot open the session: %v", err)
 	}
 	defer session.Close()
+
+	// cache objectIDs on startup
+	log.Printf("hydrating cache")
+	if objectIDsResponse, err := metApiClient.GetObjectIDs(); err == nil {
+		inMemoryCache.Set(api.ObjectIDsCacheKey, objectIDsResponse.ObjectIDs, api.ObjectIDsTTL)
+	} else {
+		log.Fatalf("failed to hydrate cache with initial data: %v", err)
+	}
 
 	// register commands
 	log.Printf("registering %d bot command(s)\n", len(commands.Commands))

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/chancehl/rembrandt-v2/internal/api"
 	"github.com/chancehl/rembrandt-v2/internal/utils/interaction"
 )
 
@@ -22,7 +23,7 @@ var SearchCommand = discordgo.ApplicationCommand{
 }
 
 // `/search` command handler
-func SearchCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func SearchCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, c *api.METAPIClient) {
 	query, _ := interaction.GetOption(i.Interaction, "query")
 
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
