@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/chancehl/rembrandt-v2/internal/api"
@@ -16,23 +17,79 @@ var ArtCommand = discordgo.ApplicationCommand{
 // `/art` command handler
 func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, c *api.METAPIClient) {
 	objectIDData, _ := c.GetObjectIDs()
-	fmt.Println(objectIDData.Total)
+	randomObjectID := objectIDData.ObjectIDs[rand.Intn(objectIDData.Total)]
+
+	objectData, _ := c.GetObjectByID(randomObjectID)
+
+	fields := []*discordgo.MessageEmbedField{}
+
+	if objectData.ArtistDisplayName != "" {
+		fields = append(fields, &discordgo.MessageEmbedField{
+			Name:   "Artist",
+			Value:  objectData.ArtistDisplayName,
+			Inline: false,
+		})
+	}
+
+	if objectData.ObjectDate != "" {
+		fields = append(fields, &discordgo.MessageEmbedField{
+			Name:   "Date",
+			Value:  objectData.ObjectDate,
+			Inline: false,
+		})
+	}
+
+	if objectData.Department != "" {
+		fields = append(fields, &discordgo.MessageEmbedField{
+			Name:   "Department",
+			Value:  objectData.Department,
+			Inline: false,
+		})
+	}
+
+	if objectData.Medium != "" {
+		fields = append(fields, &discordgo.MessageEmbedField{
+			Name:   "Medium",
+			Value:  objectData.Medium,
+			Inline: false,
+		})
+	}
+
+	if objectData.AccessionNumber != "" {
+		fields = append(fields, &discordgo.MessageEmbedField{
+			Name:   "Accession Number",
+			Value:  objectData.AccessionNumber,
+			Inline: false,
+		})
+	}
+
+	if objectData.ObjectURL != "" {
+		fields = append(fields, &discordgo.MessageEmbedField{
+			Name:   "URL",
+			Value:  fmt.Sprintf("[View on The Met](%s)", objectData.ObjectURL),
+			Inline: false,
+		})
+	}
+
+	embed := discordgo.MessageEmbed{
+		Title:  objectData.Title,
+		Fields: fields,
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: fmt.Sprintf("The Metropolitan Museum of Art (Object ID: %d)", objectData.ObjectID),
+		},
+	}
+
+	if objectData.PrimaryImage != "" {
+		embed.Image = &discordgo.MessageEmbedImage{
+			URL: objectData.PrimaryImage,
+		}
+	}
 
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
 			Embeds: []*discordgo.MessageEmbed{
-				{
-					Title:       "Art Title",
-					Description: "Art Description",
-					Fields: []*discordgo.MessageEmbedField{
-						{
-							Name:   "Artist",
-							Value:  "Foo",
-							Inline: false,
-						},
-					},
-				},
+				&embed,
 			},
 		},
 	})

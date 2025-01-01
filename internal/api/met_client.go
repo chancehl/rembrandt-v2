@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/chancehl/rembrandt-v2/internal/cache"
@@ -61,8 +62,8 @@ func (c *METAPIClient) GetObjectIDs() (*GetObjectsResponse, error) {
 }
 
 // Gets a MET object by ID
-func (c *METAPIClient) GetObjectByID(id string) (*GetObjectResponse, error) {
-	url, _ := url.JoinPath(c.base, []string{c.collection, c.version, "objects", id}...)
+func (c *METAPIClient) GetObjectByID(id int) (*GetObjectResponse, error) {
+	url, _ := url.JoinPath(c.base, []string{c.collection, c.version, "objects", strconv.Itoa(id)}...)
 
 	resp, err := http.Get(url)
 	if err != nil {
