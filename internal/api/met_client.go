@@ -18,6 +18,7 @@ const (
 	ObjectIDsTTL             = time.Hour
 	InvalidObjectIDsCacheKey = "invalidObjectIDs"
 	InvalidObjectIDsTTL      = time.Hour * 24 // TODO: make this not expire
+	InvalidObjectRetryLimit  = 5
 )
 
 type METAPIClient struct {
@@ -102,8 +103,17 @@ func (c *METAPIClient) SearchForObject(query string) (*GetObjectsResponse, error
 	return &getObjectsResponse, nil
 }
 
-// GetRandomObject retrieves a random object from the MET API that has a primary image.
+// GetRandomObject retrieves a random object from the MET API that has a primary image, with retry limits.
 func (c *METAPIClient) GetRandomObject() (*GetObjectResponse, error) {
+	return c.getRandomObjectWithRetry(InvalidObjectRetryLimit)
+}
+
+// getRandomObjectWithRetry attempts to retrieve a random object with a specified number of retries.
+func (c *METAPIClient) getRandomObjectWithRetry(retryCount int) (*GetObjectResponse, error) {
+	if retryCount == 0 {
+		return nil, fmt.Errorf("reached maximum retry limit for getting a random object")
+	}
+
 	objectIDData, err := c.GetObjectIDs()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get object IDs: %w", err)
@@ -117,11 +127,10 @@ func (c *METAPIClient) GetRandomObject() (*GetObjectResponse, error) {
 	}
 
 	if objectData.PrimaryImage == "" {
-		log.Printf("Object ID %d has no primary image, updating cache and retrying", randomObjectID)
-		log.Println(c.cache.Get(InvalidObjectIDsCacheKey))
+		log.Printf("Object ID %d has no primary image, updating cache and retrying, attempts left: %d", randomObjectID, retryCount-1)
 		c.updateInvalidObjectIDsCache(randomObjectID)
 
-		return c.GetRandomObject()
+		return c.getRandomObjectWithRetry(retryCount - 1)
 	}
 
 	return objectData, nil
@@ -133,8 +142,6 @@ func (c *METAPIClient) updateInvalidObjectIDsCache(objectID int) {
 	if cachedInvalidObjectIDs, exists := c.cache.Get(InvalidObjectIDsCacheKey); exists {
 		if ids, ok := cachedInvalidObjectIDs.([]int); ok {
 			invalidIDs = append(ids, objectID)
-		} else {
-			log.Fatalf("Cache data type error: expected []int")
 		}
 	} else {
 		invalidIDs = append(invalidIDs, objectID)
