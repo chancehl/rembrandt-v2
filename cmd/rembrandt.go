@@ -17,7 +17,7 @@ var (
 	botConfig     *config.BotConfig
 	session       *discordgo.Session
 	registrar     *commands.CommandRegistrar
-	metApiClient  *api.METApiClient
+	metApiClient  *api.METAPIClient
 	inMemoryCache *cache.InMemoryCache
 )
 
@@ -46,7 +46,7 @@ func init() {
 	inMemoryCache = cache.NewInMemoryCache()
 
 	// create MET api client
-	metApiClient = api.NewMETApiClient(inMemoryCache)
+	metApiClient = api.NewMETAPIClient(inMemoryCache)
 }
 
 func main() {
