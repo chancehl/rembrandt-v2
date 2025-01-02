@@ -52,13 +52,13 @@ func init() {
 	dbClient := db.NewClient()
 
 	// create OpenAI client
-	openAIClient := openai.NewClient()
+	openAiClient := openai.NewClient()
 
 	// create aggregated client struct
 	appContext = &context.AppContext{
 		MetClient:    metClient,
 		DbClient:     dbClient,
-		OpenAIClient: openAIClient,
+		OpenAiClient: openAiClient,
 	}
 
 	// create command registrar

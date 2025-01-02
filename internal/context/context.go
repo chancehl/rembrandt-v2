@@ -9,5 +9,5 @@ import (
 type AppContext struct {
 	MetClient    *met.Client
 	DbClient     *db.Client
-	OpenAIClient *openai.Client
+	OpenAiClient *openai.Client
 }
