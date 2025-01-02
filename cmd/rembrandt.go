@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	botConfig     *config.BotConfig
+	botConfig     *config.Config
 	session       *discordgo.Session
 	registrar     *commands.Registrar
 	inMemoryCache *cache.InMemoryCache
@@ -30,10 +30,8 @@ func init() {
 		log.Fatalf("error loading .env file: %v", err)
 	}
 
-	botConfig = &config.BotConfig{
-		TestGuildID:          os.Getenv("TEST_GUILD_ID"),
-		RemoveCommandsOnExit: os.Getenv("REMOVE_COMMANDS_ON_EXIT") == "true",
-	}
+	// create bot config
+	botConfig = config.NewConfig(os.Getenv("TEST_GUILD_ID"), os.Getenv("REMOVE_COMMANDS_ON_EXIT") == "true")
 
 	// create bot session
 	var err error
@@ -55,11 +53,10 @@ func init() {
 	openAiClient := openai.NewClient()
 
 	// create aggregated client struct
-	appContext = &context.AppContext{
-		MetClient:    metClient,
-		DbClient:     dbClient,
-		OpenAiClient: openAiClient,
-	}
+	clients := context.NewClientContext(metClient, dbClient, openAiClient)
+
+	// create conetxt struct
+	appContext = context.NewAppContext(clients)
 
 	// create command registrar
 	registrar = commands.NewRegistrar(botConfig, session, appContext)
@@ -76,7 +73,7 @@ func main() {
 
 	// cache objectIDs on startup
 	log.Printf("hydrating cache with object IDs from met api")
-	if objectIDsResponse, err := appContext.MetClient.GetObjectIDs(); err == nil {
+	if objectIDsResponse, err := appContext.Clients.Met.GetObjectIDs(); err == nil {
 		inMemoryCache.Set(met.ObjectIDsCacheKey, objectIDsResponse.ObjectIDs, met.ObjectIDsTTL)
 		log.Printf("successfully hydrated cache with %d object IDs", objectIDsResponse.Total)
 	} else {

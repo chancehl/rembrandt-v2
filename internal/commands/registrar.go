@@ -13,25 +13,25 @@ import (
 // 	DeregisterCommands([]*discordgo.ApplicationCommand) error
 // }
 
-type HandlerFunc func(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *context.AppContext)
+type HandlerFunc func(*discordgo.Session, *discordgo.InteractionCreate, *context.AppContext)
 
 type Registrar struct {
-	config     *config.BotConfig
+	config     *config.Config
 	session    *discordgo.Session
 	commands   []*discordgo.ApplicationCommand
 	registered []*discordgo.ApplicationCommand
 	handlers   map[string]HandlerFunc
-	ctx        *context.AppContext
+	appContext *context.AppContext
 }
 
-func NewRegistrar(config *config.BotConfig, session *discordgo.Session, ctx *context.AppContext) *Registrar {
+func NewRegistrar(config *config.Config, session *discordgo.Session, appContext *context.AppContext) *Registrar {
 	return &Registrar{
 		config:     config,
 		session:    session,
 		commands:   Commands,
 		handlers:   Handlers,
 		registered: []*discordgo.ApplicationCommand{},
-		ctx:        ctx,
+		appContext: appContext,
 	}
 }
 
@@ -46,7 +46,7 @@ func (r *Registrar) RegisterCommands() error {
 	}
 	r.session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if handler, ok := Handlers[i.ApplicationCommandData().Name]; ok {
-			handler(s, i, r.ctx)
+			handler(s, i, r.appContext)
 		}
 	})
 	return nil

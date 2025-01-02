@@ -16,7 +16,7 @@ var ArtCommand = discordgo.ApplicationCommand{
 
 // `/art` command handler
 func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *context.AppContext) {
-	objectData, err := ctx.MetClient.GetRandomObject()
+	objectData, err := ctx.Clients.Met.GetRandomObject()
 	if err != nil {
 		utils.RespondWithError(s, i, err)
 		return
