@@ -17,9 +17,8 @@ import (
 )
 
 var (
-	ctx           *context.AppContext
-	registrar     *commands.Registrar
-	inMemoryCache *cache.InMemoryCache
+	ctx       *context.AppContext
+	registrar *commands.Registrar
 )
 
 func init() {
@@ -35,7 +34,7 @@ func init() {
 	}
 
 	// create cache
-	inMemoryCache = cache.NewInMemoryCache()
+	inMemoryCache := cache.NewInMemoryCache() // TODO: convert to singleton
 
 	// create clients
 	clients := &context.ClientContext{
