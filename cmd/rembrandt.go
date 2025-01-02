@@ -56,10 +56,10 @@ func init() {
 	clients := context.NewClientContext(metClient, dbClient, openAiClient)
 
 	// create conetxt struct
-	appContext = context.NewAppContext(clients)
+	appContext = context.NewAppContext(clients, botConfig, session)
 
 	// create command registrar
-	registrar = commands.NewRegistrar(botConfig, session, appContext)
+	registrar = commands.NewRegistrar(appContext)
 }
 
 func main() {

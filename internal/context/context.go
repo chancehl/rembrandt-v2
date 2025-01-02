@@ -1,9 +1,11 @@
 package context
 
 import (
+	"github.com/bwmarrin/discordgo"
 	"github.com/chancehl/rembrandt-v2/internal/clients/db"
 	"github.com/chancehl/rembrandt-v2/internal/clients/met"
 	"github.com/chancehl/rembrandt-v2/internal/clients/openai"
+	"github.com/chancehl/rembrandt-v2/internal/config"
 )
 
 type ClientContext struct {
@@ -18,8 +20,10 @@ func NewClientContext(met *met.Client, db *db.Client, openai *openai.Client) *Cl
 
 type AppContext struct {
 	Clients *ClientContext
+	Config  *config.Config
+	Session *discordgo.Session
 }
 
-func NewAppContext(clients *ClientContext) *AppContext {
-	return &AppContext{Clients: clients}
+func NewAppContext(clients *ClientContext, config *config.Config, session *discordgo.Session) *AppContext {
+	return &AppContext{Clients: clients, Config: config, Session: session}
 }
