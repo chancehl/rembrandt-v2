@@ -13,19 +13,19 @@ import (
 // 	DeregisterCommands([]*discordgo.ApplicationCommand) error
 // }
 
-type HandlerFunc func(s *discordgo.Session, i *discordgo.InteractionCreate, mc *met.METAPIClient)
+type HandlerFunc func(s *discordgo.Session, i *discordgo.InteractionCreate, mc *met.Client)
 
-type CommandRegistrar struct {
-	config     config.BotConfig
+type Registrar struct {
+	config     *config.BotConfig
 	session    *discordgo.Session
 	commands   []*discordgo.ApplicationCommand
 	registered []*discordgo.ApplicationCommand
 	handlers   map[string]HandlerFunc
-	client     *met.METAPIClient
+	client     *met.Client
 }
 
-func NewCommandRegistrar(config config.BotConfig, session *discordgo.Session, client *met.METAPIClient) *CommandRegistrar {
-	return &CommandRegistrar{
+func NewRegistrar(config *config.BotConfig, session *discordgo.Session, client *met.Client) *Registrar {
+	return &Registrar{
 		config:     config,
 		session:    session,
 		commands:   Commands,
@@ -36,7 +36,7 @@ func NewCommandRegistrar(config config.BotConfig, session *discordgo.Session, cl
 }
 
 // Registers commands on bot startup
-func (r *CommandRegistrar) RegisterCommands() error {
+func (r *Registrar) RegisterCommands() error {
 	for idx := range r.commands {
 		cmd, err := r.session.ApplicationCommandCreate(r.session.State.User.ID, r.config.TestGuildID, r.commands[idx])
 		if err != nil {
@@ -53,7 +53,7 @@ func (r *CommandRegistrar) RegisterCommands() error {
 }
 
 // De-registers commands on bot exit
-func (r *CommandRegistrar) DeregisterCommands() error {
+func (r *Registrar) DeregisterCommands() error {
 	if r.config.RemoveCommandsOnExit {
 		for _, cmd := range r.registered {
 			err := r.session.ApplicationCommandDelete(r.session.State.User.ID, r.config.TestGuildID, cmd.ID)

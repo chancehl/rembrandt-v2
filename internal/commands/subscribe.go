@@ -24,7 +24,7 @@ var SubscribeCommand = discordgo.ApplicationCommand{
 }
 
 // `/subscribe` command definition
-func SubscribeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, c *met.METAPIClient) {
+func SubscribeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, c *met.Client) {
 	channel, _ := utils.GetOption(i.Interaction, "channel")
 
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{

@@ -21,15 +21,15 @@ const (
 	InvalidObjectRetryLimit  = 5
 )
 
-type METAPIClient struct {
+type Client struct {
 	version    string
 	base       string
 	collection string
 	cache      *cache.InMemoryCache
 }
 
-func NewMETAPIClient(cache *cache.InMemoryCache) *METAPIClient {
-	return &METAPIClient{
+func NewClient(cache *cache.InMemoryCache) *Client {
+	return &Client{
 		base:       "https://collectionapi.metmuseum.org",
 		version:    "v1",
 		collection: "public/collection",
@@ -38,7 +38,7 @@ func NewMETAPIClient(cache *cache.InMemoryCache) *METAPIClient {
 }
 
 // Gets all ObjectIDs in the MET API collection
-func (c *METAPIClient) GetObjectIDs() (*GetObjectsResponse, error) {
+func (c *Client) GetObjectIDs() (*GetObjectsResponse, error) {
 	if cachedObjectIDs, exists := c.cache.Get(ObjectIDsCacheKey); exists {
 		if objectIDs, ok := cachedObjectIDs.([]int); ok {
 			return &GetObjectsResponse{Total: len(objectIDs), ObjectIDs: objectIDs}, nil
@@ -67,7 +67,7 @@ func (c *METAPIClient) GetObjectIDs() (*GetObjectsResponse, error) {
 }
 
 // Gets a MET object by ID
-func (c *METAPIClient) GetObjectByID(id int) (*GetObjectResponse, error) {
+func (c *Client) GetObjectByID(id int) (*GetObjectResponse, error) {
 	url, _ := url.JoinPath(c.base, []string{c.collection, c.version, "objects", strconv.Itoa(id)}...)
 
 	resp, err := http.Get(url)
@@ -85,7 +85,7 @@ func (c *METAPIClient) GetObjectByID(id int) (*GetObjectResponse, error) {
 }
 
 // Searches for objects matching query in MET API
-func (c *METAPIClient) SearchForObject(query string) (*GetObjectsResponse, error) {
+func (c *Client) SearchForObject(query string) (*GetObjectsResponse, error) {
 	url, _ := url.JoinPath(c.base, []string{c.collection, c.version, "search"}...)
 	urlWithQueryParams := fmt.Sprintf("%s?hasImages=true&q=%s", url, query)
 
@@ -104,12 +104,12 @@ func (c *METAPIClient) SearchForObject(query string) (*GetObjectsResponse, error
 }
 
 // GetRandomObject retrieves a random object from the MET API that has a primary image, with retry limits.
-func (c *METAPIClient) GetRandomObject() (*GetObjectResponse, error) {
+func (c *Client) GetRandomObject() (*GetObjectResponse, error) {
 	return c.getRandomObjectWithRetry(InvalidObjectRetryLimit)
 }
 
 // getRandomObjectWithRetry attempts to retrieve a random object with a specified number of retries.
-func (c *METAPIClient) getRandomObjectWithRetry(retryCount int) (*GetObjectResponse, error) {
+func (c *Client) getRandomObjectWithRetry(retryCount int) (*GetObjectResponse, error) {
 	if retryCount == 0 {
 		return nil, fmt.Errorf("reached maximum retry limit for getting a random object")
 	}
@@ -137,7 +137,7 @@ func (c *METAPIClient) getRandomObjectWithRetry(retryCount int) (*GetObjectRespo
 }
 
 // updateInvalidObjectIDsCache adds the given object ID to the cache of invalid IDs.
-func (c *METAPIClient) updateInvalidObjectIDsCache(objectID int) {
+func (c *Client) updateInvalidObjectIDsCache(objectID int) {
 	var invalidIDs []int
 	if cachedInvalidObjectIDs, exists := c.cache.Get(InvalidObjectIDsCacheKey); exists {
 		if ids, ok := cachedInvalidObjectIDs.([]int); ok {
