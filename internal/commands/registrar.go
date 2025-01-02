@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/internal/api"
+	"github.com/chancehl/rembrandt-v2/internal/clients/api/met"
 	"github.com/chancehl/rembrandt-v2/internal/config"
 )
 
@@ -13,7 +13,7 @@ import (
 // 	DeregisterCommands([]*discordgo.ApplicationCommand) error
 // }
 
-type HandlerFunc func(s *discordgo.Session, i *discordgo.InteractionCreate, mc *api.METAPIClient)
+type HandlerFunc func(s *discordgo.Session, i *discordgo.InteractionCreate, mc *met.METAPIClient)
 
 type CommandRegistrar struct {
 	config     config.BotConfig
@@ -21,10 +21,10 @@ type CommandRegistrar struct {
 	commands   []*discordgo.ApplicationCommand
 	registered []*discordgo.ApplicationCommand
 	handlers   map[string]HandlerFunc
-	client     *api.METAPIClient
+	client     *met.METAPIClient
 }
 
-func NewCommandRegistrar(config config.BotConfig, session *discordgo.Session, client *api.METAPIClient) *CommandRegistrar {
+func NewCommandRegistrar(config config.BotConfig, session *discordgo.Session, client *met.METAPIClient) *CommandRegistrar {
 	return &CommandRegistrar{
 		config:     config,
 		session:    session,

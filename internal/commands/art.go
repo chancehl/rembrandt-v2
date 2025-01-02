@@ -4,7 +4,8 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/internal/api"
+	"github.com/chancehl/rembrandt-v2/internal/clients/api/met"
+	"github.com/chancehl/rembrandt-v2/internal/utils"
 )
 
 // `/art` command definition
@@ -14,8 +15,12 @@ var ArtCommand = discordgo.ApplicationCommand{
 }
 
 // `/art` command handler
-func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, c *api.METAPIClient) {
-	objectData, _ := c.GetRandomObject()
+func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, c *met.METAPIClient) {
+	objectData, err := c.GetRandomObject()
+	if err != nil {
+		utils.RespondWithError(s, i, err)
+		return
+	}
 
 	fields := []*discordgo.MessageEmbedField{}
 
