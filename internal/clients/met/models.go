@@ -1,12 +1,12 @@
 package met
 
-type GetObjectsResponse struct {
+type Objects struct {
 	Total     int   `json:"total"`
 	ObjectIDs []int `json:"objectIDs"`
 }
 
-// GetObjectResponse represents the structure of the response for an art object from the MET API.
-type GetObjectResponse struct {
+// Object represents the structure of the response for an art object from the MET API.
+type Object struct {
 	ObjectID              int           `json:"objectID"`
 	IsHighlight           bool          `json:"isHighlight"`
 	AccessionNumber       string        `json:"accessionNumber"`

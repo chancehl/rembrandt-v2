@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/internal/clients/api/met"
+	"github.com/chancehl/rembrandt-v2/internal/clients/met"
 	"github.com/chancehl/rembrandt-v2/internal/utils"
 )
 
@@ -15,8 +15,8 @@ var ArtCommand = discordgo.ApplicationCommand{
 }
 
 // `/art` command handler
-func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, c *met.Client) {
-	objectData, err := c.GetRandomObject()
+func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, metClient *met.Client) {
+	objectData, err := metClient.GetRandomObject()
 	if err != nil {
 		utils.RespondWithError(s, i, err)
 		return
@@ -73,8 +73,9 @@ func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, c *
 	}
 
 	embed := discordgo.MessageEmbed{
-		Title:  objectData.Title,
-		Fields: fields,
+		Title:       objectData.Title,
+		Description: "Description goes here",
+		Fields:      fields,
 		Footer: &discordgo.MessageEmbedFooter{
 			Text: fmt.Sprintf("The Metropolitan Museum of Art (Object ID: %d)", objectData.ObjectID),
 		},

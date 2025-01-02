@@ -38,10 +38,10 @@ func NewClient(cache *cache.InMemoryCache) *Client {
 }
 
 // Gets all ObjectIDs in the MET API collection
-func (c *Client) GetObjectIDs() (*GetObjectsResponse, error) {
+func (c *Client) GetObjectIDs() (*Objects, error) {
 	if cachedObjectIDs, exists := c.cache.Get(ObjectIDsCacheKey); exists {
 		if objectIDs, ok := cachedObjectIDs.([]int); ok {
-			return &GetObjectsResponse{Total: len(objectIDs), ObjectIDs: objectIDs}, nil
+			return &Objects{Total: len(objectIDs), ObjectIDs: objectIDs}, nil
 		} else {
 			return nil, fmt.Errorf("could not convert cached objectIDs to []int")
 		}
@@ -55,7 +55,7 @@ func (c *Client) GetObjectIDs() (*GetObjectsResponse, error) {
 	}
 	defer resp.Body.Close()
 
-	var getObjectsResponse GetObjectsResponse
+	var getObjectsResponse Objects
 	if err := json.NewDecoder(resp.Body).Decode(&getObjectsResponse); err != nil {
 		return nil, fmt.Errorf("could not deserialize MET API body: %v", err)
 	}
@@ -67,7 +67,7 @@ func (c *Client) GetObjectIDs() (*GetObjectsResponse, error) {
 }
 
 // Gets a MET object by ID
-func (c *Client) GetObjectByID(id int) (*GetObjectResponse, error) {
+func (c *Client) GetObjectByID(id int) (*Object, error) {
 	url, _ := url.JoinPath(c.base, []string{c.collection, c.version, "objects", strconv.Itoa(id)}...)
 
 	resp, err := http.Get(url)
@@ -76,7 +76,7 @@ func (c *Client) GetObjectByID(id int) (*GetObjectResponse, error) {
 	}
 	defer resp.Body.Close()
 
-	var getObjectResponse GetObjectResponse
+	var getObjectResponse Object
 	if err := json.NewDecoder(resp.Body).Decode(&getObjectResponse); err != nil {
 		return nil, fmt.Errorf("could not deserialize MET API body: %v", err)
 	}
@@ -85,7 +85,7 @@ func (c *Client) GetObjectByID(id int) (*GetObjectResponse, error) {
 }
 
 // Searches for objects matching query in MET API
-func (c *Client) SearchForObject(query string) (*GetObjectsResponse, error) {
+func (c *Client) SearchForObject(query string) (*Objects, error) {
 	url, _ := url.JoinPath(c.base, []string{c.collection, c.version, "search"}...)
 	urlWithQueryParams := fmt.Sprintf("%s?hasImages=true&q=%s", url, query)
 
@@ -95,7 +95,7 @@ func (c *Client) SearchForObject(query string) (*GetObjectsResponse, error) {
 	}
 	defer resp.Body.Close()
 
-	var getObjectsResponse GetObjectsResponse
+	var getObjectsResponse Objects
 	if err := json.NewDecoder(resp.Body).Decode(&getObjectsResponse); err != nil {
 		return nil, fmt.Errorf("could not deserialize MET API body: %v", err)
 	}
@@ -104,12 +104,12 @@ func (c *Client) SearchForObject(query string) (*GetObjectsResponse, error) {
 }
 
 // GetRandomObject retrieves a random object from the MET API that has a primary image, with retry limits.
-func (c *Client) GetRandomObject() (*GetObjectResponse, error) {
+func (c *Client) GetRandomObject() (*Object, error) {
 	return c.getRandomObjectWithRetry(InvalidObjectRetryLimit)
 }
 
 // getRandomObjectWithRetry attempts to retrieve a random object with a specified number of retries.
-func (c *Client) getRandomObjectWithRetry(retryCount int) (*GetObjectResponse, error) {
+func (c *Client) getRandomObjectWithRetry(retryCount int) (*Object, error) {
 	if retryCount == 0 {
 		return nil, fmt.Errorf("reached maximum retry limit for getting a random object")
 	}

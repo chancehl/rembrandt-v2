@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/internal/clients/api/met"
+	"github.com/chancehl/rembrandt-v2/internal/clients/met"
 	"github.com/chancehl/rembrandt-v2/internal/utils"
 )
 

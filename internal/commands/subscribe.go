@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/internal/clients/api/met"
+	"github.com/chancehl/rembrandt-v2/internal/clients/met"
 	"github.com/chancehl/rembrandt-v2/internal/utils"
 )
 
@@ -24,7 +24,7 @@ var SubscribeCommand = discordgo.ApplicationCommand{
 }
 
 // `/subscribe` command definition
-func SubscribeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, c *met.Client) {
+func SubscribeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, metClient *met.Client) {
 	channel, _ := utils.GetOption(i.Interaction, "channel")
 
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{

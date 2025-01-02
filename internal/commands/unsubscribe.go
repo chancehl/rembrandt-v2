@@ -2,7 +2,7 @@ package commands
 
 import (
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/internal/clients/api/met"
+	"github.com/chancehl/rembrandt-v2/internal/clients/met"
 )
 
 var UnsubscribeCommand = discordgo.ApplicationCommand{
@@ -11,7 +11,7 @@ var UnsubscribeCommand = discordgo.ApplicationCommand{
 	DefaultMemberPermissions: &manageServerPermission,
 }
 
-func UnsubscribeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, c *met.Client) {
+func UnsubscribeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, metClient *met.Client) {
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{
