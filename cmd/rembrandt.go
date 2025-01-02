@@ -48,6 +48,7 @@ func init() {
 	config := &config.Config{
 		TestGuildID:          os.Getenv("TEST_GUILD_ID"),
 		RemoveCommandsOnExit: os.Getenv("REMOVE_COMMANDS_ON_EXIT") == "true",
+		HydrateCacheOnStart:  os.Getenv("HYDRATE_CACHE_ON_START") == "true",
 	}
 
 	// create context
@@ -70,12 +71,13 @@ func main() {
 	}
 	defer ctx.Session.Close()
 
-	// cache objectIDs on startup
-	log.Printf("fetching object IDs from met api to hydrate cache")
-	if objectIDsResponse, err := ctx.Clients.Met.GetObjectIDs(); err == nil {
-		log.Printf("successfully fetched %d object IDs", objectIDsResponse.Total)
-	} else {
-		log.Fatalf("failed to hydrate cache with initial data: %v", err)
+	// hydrate cache on startup if configured
+	if ctx.Config.HydrateCacheOnStart {
+		if resp, err := ctx.Clients.Met.GetObjectIDs(); err == nil {
+			log.Printf("successfully fetched %d object IDs from met api (cache will be hydrated)", resp.Total)
+		} else {
+			log.Fatalf("failed to hydrate cache with initial data: %v", err)
+		}
 	}
 
 	// register commands
