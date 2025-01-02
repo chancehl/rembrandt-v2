@@ -17,11 +17,8 @@ import (
 )
 
 var (
-	botConfig     *config.Config
-	session       *discordgo.Session
-	registrar     *commands.Registrar
-	inMemoryCache *cache.InMemoryCache
-	appContext    *context.AppContext
+	registrar *commands.Registrar
+	ctx       *context.AppContext
 )
 
 func init() {
@@ -31,17 +28,16 @@ func init() {
 	}
 
 	// create bot config
-	botConfig = config.NewConfig(os.Getenv("TEST_GUILD_ID"), os.Getenv("REMOVE_COMMANDS_ON_EXIT") == "true")
+	botConfig := config.NewConfig(os.Getenv("TEST_GUILD_ID"), os.Getenv("REMOVE_COMMANDS_ON_EXIT") == "true")
 
 	// create bot session
-	var err error
-	session, err = discordgo.New("Bot " + os.Getenv("TOKEN"))
+	session, err := discordgo.New("Bot " + os.Getenv("TOKEN"))
 	if err != nil {
 		log.Fatalf("invalid bot parameters: %v", err)
 	}
 
 	// create in memory cache
-	inMemoryCache = cache.NewInMemoryCache()
+	inMemoryCache := cache.NewInMemoryCache()
 
 	// create MET api client
 	metClient := met.NewClient(inMemoryCache)
@@ -56,25 +52,25 @@ func init() {
 	clients := context.NewClientContext(metClient, dbClient, openAiClient)
 
 	// create conetxt struct
-	appContext = context.NewAppContext(clients, botConfig, session)
+	ctx = context.NewAppContext(inMemoryCache, clients, botConfig, session)
 
 	// create command registrar
-	registrar = commands.NewRegistrar(appContext)
+	registrar = commands.NewRegistrar(ctx)
 }
 
 func main() {
-	log.Printf("starting bot with config %+v\n", *botConfig)
+	log.Printf("starting bot with config %+v\n", *ctx.Config)
 
 	// start the bot
-	if err := session.Open(); err != nil {
+	if err := ctx.Session.Open(); err != nil {
 		log.Fatalf("cannot open the session: %v", err)
 	}
-	defer session.Close()
+	defer ctx.Session.Close()
 
 	// cache objectIDs on startup
 	log.Printf("hydrating cache with object IDs from met api")
-	if objectIDsResponse, err := appContext.Clients.Met.GetObjectIDs(); err == nil {
-		inMemoryCache.Set(met.ObjectIDsCacheKey, objectIDsResponse.ObjectIDs, met.ObjectIDsTTL)
+	if objectIDsResponse, err := ctx.Clients.Met.GetObjectIDs(); err == nil {
+		ctx.Cache.Set(met.ObjectIDsCacheKey, objectIDsResponse.ObjectIDs, met.ObjectIDsTTL)
 		log.Printf("successfully hydrated cache with %d object IDs", objectIDsResponse.Total)
 	} else {
 		log.Fatalf("failed to hydrate cache with initial data: %v", err)
