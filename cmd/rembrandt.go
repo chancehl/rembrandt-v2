@@ -17,8 +17,9 @@ import (
 )
 
 var (
-	registrar *commands.Registrar
-	ctx       *context.AppContext
+	ctx           *context.AppContext
+	registrar     *commands.Registrar
+	inMemoryCache *cache.InMemoryCache
 )
 
 func init() {
@@ -34,11 +35,11 @@ func init() {
 	}
 
 	// create cache
-	cache := cache.NewInMemoryCache()
+	inMemoryCache = cache.NewInMemoryCache()
 
 	// create clients
 	clients := &context.ClientContext{
-		Met:    met.NewClient(cache),
+		Met:    met.NewClient(inMemoryCache),
 		DB:     db.NewClient(),
 		OpenAI: openai.NewClient(),
 	}
@@ -51,7 +52,6 @@ func init() {
 
 	// create context
 	ctx = &context.AppContext{
-		Cache:   cache,
 		Clients: clients,
 		Config:  config,
 		Session: session,
@@ -71,10 +71,9 @@ func main() {
 	defer ctx.Session.Close()
 
 	// cache objectIDs on startup
-	log.Printf("hydrating cache with object IDs from met api")
+	log.Printf("fetching object IDs from met api to hydrate cache")
 	if objectIDsResponse, err := ctx.Clients.Met.GetObjectIDs(); err == nil {
-		ctx.Cache.Set(met.ObjectIDsCacheKey, objectIDsResponse.ObjectIDs, met.ObjectIDsTTL)
-		log.Printf("successfully hydrated cache with %d object IDs", objectIDsResponse.Total)
+		log.Printf("successfully fetched %d object IDs", objectIDsResponse.Total)
 	} else {
 		log.Fatalf("failed to hydrate cache with initial data: %v", err)
 	}
