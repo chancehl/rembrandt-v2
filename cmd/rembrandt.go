@@ -7,9 +7,12 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/chancehl/rembrandt-v2/internal/cache"
+	"github.com/chancehl/rembrandt-v2/internal/clients/db"
 	"github.com/chancehl/rembrandt-v2/internal/clients/met"
+	"github.com/chancehl/rembrandt-v2/internal/clients/openai"
 	"github.com/chancehl/rembrandt-v2/internal/commands"
 	"github.com/chancehl/rembrandt-v2/internal/config"
+	"github.com/chancehl/rembrandt-v2/internal/context"
 	"github.com/joho/godotenv"
 )
 
@@ -17,8 +20,8 @@ var (
 	botConfig     *config.BotConfig
 	session       *discordgo.Session
 	registrar     *commands.Registrar
-	metClient     *met.Client
 	inMemoryCache *cache.InMemoryCache
+	appContext    *context.AppContext
 )
 
 func init() {
@@ -43,10 +46,23 @@ func init() {
 	inMemoryCache = cache.NewInMemoryCache()
 
 	// create MET api client
-	metClient = met.NewClient(inMemoryCache)
+	metClient := met.NewClient(inMemoryCache)
+
+	// create DB client
+	dbClient := db.NewClient()
+
+	// create OpenAI client
+	openAIClient := openai.NewClient()
+
+	// create aggregated client struct
+	appContext = &context.AppContext{
+		MetClient:    metClient,
+		DbClient:     dbClient,
+		OpenAIClient: openAIClient,
+	}
 
 	// create command registrar
-	registrar = commands.NewRegistrar(botConfig, session, metClient)
+	registrar = commands.NewRegistrar(botConfig, session, appContext)
 }
 
 func main() {
@@ -59,9 +75,10 @@ func main() {
 	defer session.Close()
 
 	// cache objectIDs on startup
-	log.Printf("hydrating cache with object IDs")
-	if objectIDsResponse, err := metClient.GetObjectIDs(); err == nil {
+	log.Printf("hydrating cache with object IDs from met api")
+	if objectIDsResponse, err := appContext.MetClient.GetObjectIDs(); err == nil {
 		inMemoryCache.Set(met.ObjectIDsCacheKey, objectIDsResponse.ObjectIDs, met.ObjectIDsTTL)
+		log.Printf("successfully hydrated cache with %d object IDs", objectIDsResponse.Total)
 	} else {
 		log.Fatalf("failed to hydrate cache with initial data: %v", err)
 	}

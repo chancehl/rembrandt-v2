@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/internal/clients/met"
 	"github.com/chancehl/rembrandt-v2/internal/config"
+	"github.com/chancehl/rembrandt-v2/internal/context"
 )
 
 // type commandRegistrar interface {
@@ -13,7 +13,7 @@ import (
 // 	DeregisterCommands([]*discordgo.ApplicationCommand) error
 // }
 
-type HandlerFunc func(s *discordgo.Session, i *discordgo.InteractionCreate, metClient *met.Client)
+type HandlerFunc func(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *context.AppContext)
 
 type Registrar struct {
 	config     *config.BotConfig
@@ -21,17 +21,17 @@ type Registrar struct {
 	commands   []*discordgo.ApplicationCommand
 	registered []*discordgo.ApplicationCommand
 	handlers   map[string]HandlerFunc
-	client     *met.Client
+	ctx        *context.AppContext
 }
 
-func NewRegistrar(config *config.BotConfig, session *discordgo.Session, client *met.Client) *Registrar {
+func NewRegistrar(config *config.BotConfig, session *discordgo.Session, ctx *context.AppContext) *Registrar {
 	return &Registrar{
 		config:     config,
 		session:    session,
 		commands:   Commands,
 		handlers:   Handlers,
 		registered: []*discordgo.ApplicationCommand{},
-		client:     client,
+		ctx:        ctx,
 	}
 }
 
@@ -46,7 +46,7 @@ func (r *Registrar) RegisterCommands() error {
 	}
 	r.session.AddHandler(func(s *discordgo.Session, i *discordgo.InteractionCreate) {
 		if handler, ok := Handlers[i.ApplicationCommandData().Name]; ok {
-			handler(s, i, r.client)
+			handler(s, i, r.ctx)
 		}
 	})
 	return nil

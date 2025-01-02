@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/bwmarrin/discordgo"
-	"github.com/chancehl/rembrandt-v2/internal/clients/met"
+	"github.com/chancehl/rembrandt-v2/internal/context"
 	"github.com/chancehl/rembrandt-v2/internal/utils"
 )
 
@@ -15,8 +15,8 @@ var ArtCommand = discordgo.ApplicationCommand{
 }
 
 // `/art` command handler
-func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, metClient *met.Client) {
-	objectData, err := metClient.GetRandomObject()
+func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *context.AppContext) {
+	objectData, err := ctx.MetClient.GetRandomObject()
 	if err != nil {
 		utils.RespondWithError(s, i, err)
 		return
