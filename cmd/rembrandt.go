@@ -27,32 +27,35 @@ func init() {
 		log.Fatalf("error loading .env file: %v", err)
 	}
 
-	// create bot config
-	botConfig := config.NewConfig(os.Getenv("TEST_GUILD_ID"), os.Getenv("REMOVE_COMMANDS_ON_EXIT") == "true")
-
 	// create bot session
 	session, err := discordgo.New("Bot " + os.Getenv("TOKEN"))
 	if err != nil {
 		log.Fatalf("invalid bot parameters: %v", err)
 	}
 
-	// create in memory cache
-	inMemoryCache := cache.NewInMemoryCache()
+	// create cache
+	cache := cache.NewInMemoryCache()
 
-	// create MET api client
-	metClient := met.NewClient(inMemoryCache)
+	// create clients
+	clients := &context.ClientContext{
+		Met:    met.NewClient(cache),
+		DB:     db.NewClient(),
+		OpenAI: openai.NewClient(),
+	}
 
-	// create DB client
-	dbClient := db.NewClient()
+	// create config
+	config := &config.Config{
+		TestGuildID:          os.Getenv("TEST_GUILD_ID"),
+		RemoveCommandsOnExit: os.Getenv("REMOVE_COMMANDS_ON_EXIT") == "true",
+	}
 
-	// create OpenAI client
-	openAiClient := openai.NewClient()
-
-	// create aggregated client struct
-	clients := context.NewClientContext(metClient, dbClient, openAiClient)
-
-	// create conetxt struct
-	ctx = context.NewAppContext(inMemoryCache, clients, botConfig, session)
+	// create context
+	ctx = &context.AppContext{
+		Cache:   cache,
+		Clients: clients,
+		Config:  config,
+		Session: session,
+	}
 
 	// create command registrar
 	registrar = commands.NewRegistrar(ctx)

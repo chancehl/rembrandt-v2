@@ -15,26 +15,9 @@ type ClientContext struct {
 	OpenAI *openai.Client
 }
 
-func NewClientContext(met *met.Client, db *db.Client, openai *openai.Client) *ClientContext {
-	return &ClientContext{
-		Met:    met,
-		DB:     db,
-		OpenAI: openai,
-	}
-}
-
 type AppContext struct {
 	Clients *ClientContext
 	Config  *config.Config
 	Session *discordgo.Session
 	Cache   *cache.InMemoryCache
-}
-
-func NewAppContext(cache *cache.InMemoryCache, clients *ClientContext, config *config.Config, session *discordgo.Session) *AppContext {
-	return &AppContext{
-		Cache:   cache,
-		Clients: clients,
-		Config:  config,
-		Session: session,
-	}
 }
