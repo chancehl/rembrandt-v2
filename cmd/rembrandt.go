@@ -28,7 +28,7 @@ func init() {
 	}
 
 	// create bot session
-	session, err := discordgo.New("Bot " + os.Getenv("TOKEN"))
+	session, err := discordgo.New("Bot " + os.Getenv("DISCORD_BOT_TOKEN"))
 	if err != nil {
 		log.Fatalf("invalid bot parameters: %v", err)
 	}
@@ -45,8 +45,8 @@ func init() {
 
 	// create config
 	config := &config.Config{
-		TestGuildID:          os.Getenv("TEST_GUILD_ID"),
-		RemoveCommandsOnExit: os.Getenv("REMOVE_COMMANDS_ON_EXIT") == "true",
+		TestGuildID:          os.Getenv("DISCORD_TEST_GUILD_ID"),
+		RemoveCommandsOnExit: os.Getenv("DISCORD_REMOVE_COMMANDS_ON_EXIT") == "true",
 		HydrateCacheOnStart:  os.Getenv("HYDRATE_CACHE_ON_START") == "true",
 	}
 

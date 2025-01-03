@@ -2,11 +2,13 @@ package commands
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/chancehl/rembrandt-v2/internal/context"
-	"github.com/chancehl/rembrandt-v2/internal/utils"
 )
+
+var ErrorMessage string = "Sorry, something went wrong when I was looking up your art. Please try again later."
 
 // `/art` command definition
 var ArtCommand = discordgo.ApplicationCommand{
@@ -16,9 +18,20 @@ var ArtCommand = discordgo.ApplicationCommand{
 
 // `/art` command handler
 func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *context.AppContext) {
+	// tell the user the bot is "thinking..." while we wait for a completion
+	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+	})
+
 	objectData, err := ctx.Clients.Met.GetRandomObject()
+
 	if err != nil {
-		utils.RespondWithError(s, i, err)
+		log.Printf("error getting random object: %v", err)
+
+		s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+			Content: &ErrorMessage,
+		})
+
 		return
 	}
 
@@ -28,6 +41,14 @@ func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx
 		fields = append(fields, &discordgo.MessageEmbedField{
 			Name:   "Artist",
 			Value:  objectData.ArtistDisplayName,
+			Inline: false,
+		})
+	}
+
+	if summary, err := ctx.Clients.OpenAI.CreateSummaryForObject(objectData); err == nil {
+		fields = append(fields, &discordgo.MessageEmbedField{
+			Name:   "Description",
+			Value:  summary.Description,
 			Inline: false,
 		})
 	}
@@ -44,6 +65,22 @@ func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx
 		fields = append(fields, &discordgo.MessageEmbedField{
 			Name:   "Department",
 			Value:  objectData.Department,
+			Inline: false,
+		})
+	}
+
+	if objectData.Culture != "" {
+		fields = append(fields, &discordgo.MessageEmbedField{
+			Name:   "Culture",
+			Value:  objectData.Culture,
+			Inline: false,
+		})
+	}
+
+	if objectData.Period != "" {
+		fields = append(fields, &discordgo.MessageEmbedField{
+			Name:   "Period",
+			Value:  objectData.Period,
 			Inline: false,
 		})
 	}
@@ -73,9 +110,8 @@ func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx
 	}
 
 	embed := discordgo.MessageEmbed{
-		Title:       objectData.Title,
-		Description: "Description goes here",
-		Fields:      fields,
+		Title:  objectData.Title,
+		Fields: fields,
 		Footer: &discordgo.MessageEmbedFooter{
 			Text: fmt.Sprintf("The Metropolitan Museum of Art (Object ID: %d)", objectData.ObjectID),
 		},
@@ -87,12 +123,10 @@ func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx
 		}
 	}
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Embeds: []*discordgo.MessageEmbed{
-				&embed,
-			},
+	// edit the original message with the response
+	s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
+		Embeds: &[]*discordgo.MessageEmbed{
+			&embed,
 		},
 	})
 }

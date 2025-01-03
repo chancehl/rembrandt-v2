@@ -1,17 +1,65 @@
 package openai
 
-import "github.com/chancehl/rembrandt-v2/internal/clients/met"
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"os"
 
-type Client struct{}
+	"github.com/chancehl/rembrandt-v2/internal/clients/met"
+	"github.com/openai/openai-go"
+	"github.com/openai/openai-go/option"
+)
+
+// TODO: this prompt needs jesus. update later.
+const prompt = `You are a discord bot named "Rembrandt" who writes short descriptions (as you'd see on a placard at a museum) for pieces of art contained within the Metropolitan Museum of Art. Please write a summary for this piece:
+	- ObjectID: %d	
+	- Title: %s
+	- Department: %s
+	- Artist: %s
+
+You do not need to repeat the information I've given you. Please do not include any additional formatting or markup in your response.
+`
+
+type Client openai.Client
 
 func NewClient() *Client {
-	return &Client{}
+	key := os.Getenv("OPENAI_API_KEY")
+	return (*Client)(openai.NewClient(option.WithAPIKey(key)))
 }
 
-func (c *Client) CreateCompletion(prompt string) (string, error) {
-	return "", nil
-}
+func (c *Client) CreateSummaryForObject(o *met.Object) (*ObjectSummary, error) {
+	schemaParam := openai.ResponseFormatJSONSchemaJSONSchemaParam{
+		Name:        openai.F("museum_summary"),
+		Description: openai.F("notable information about a piece contained within the Metropolitan Museum of Art"),
+		Schema:      openai.F(objectSummaryResponseSchema),
+		Strict:      openai.Bool(true),
+	}
 
-func (c *Client) CreateDescriptionForObject(o met.Object) (string, error) {
-	return "", nil
+	prompt := fmt.Sprintf(prompt, o.ObjectID, o.Title, o.Department, o.ArtistDisplayName)
+
+	chat, err := c.Chat.Completions.New(context.TODO(), openai.ChatCompletionNewParams{
+		ResponseFormat: openai.F[openai.ChatCompletionNewParamsResponseFormatUnion](
+			openai.ResponseFormatJSONSchemaParam{
+				Type:       openai.F(openai.ResponseFormatJSONSchemaTypeJSONSchema),
+				JSONSchema: openai.F(schemaParam),
+			},
+		),
+		Model: openai.F(openai.ChatModelGPT4o),
+		Messages: openai.F([]openai.ChatCompletionMessageParamUnion{
+			openai.UserMessage(prompt),
+		}),
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("could not create chat completion: %w", err)
+	}
+
+	var objectSummary ObjectSummary
+
+	if err := json.Unmarshal([]byte(chat.Choices[0].Message.Content), &objectSummary); err != nil {
+		return nil, fmt.Errorf("could not unmarshal object summary: %w", err)
+	}
+
+	return &objectSummary, nil
 }
