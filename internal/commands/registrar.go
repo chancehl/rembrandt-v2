@@ -34,7 +34,7 @@ func NewRegistrar(context *context.AppContext) *Registrar {
 func (r *Registrar) RegisterCommands() error {
 	for idx := range r.commands {
 		userID := r.context.Session.State.User.ID
-		testGuildID := r.context.Config.TestGuildID
+		testGuildID := r.context.Config.Discord.TestGuildID
 
 		cmd, err := r.context.Session.ApplicationCommandCreate(userID, testGuildID, r.commands[idx])
 		if err != nil {
@@ -55,10 +55,10 @@ func (r *Registrar) RegisterCommands() error {
 
 // De-registers commands on bot exit
 func (r *Registrar) DeregisterCommands() error {
-	if r.context.Config.RemoveCommandsOnExit {
+	if r.context.Config.Discord.RemoveCommandsOnExit {
 		for _, cmd := range r.registered {
 			userID := r.context.Session.State.User.ID
-			testGuildID := r.context.Config.TestGuildID
+			testGuildID := r.context.Config.Discord.TestGuildID
 
 			err := r.context.Session.ApplicationCommandDelete(userID, testGuildID, cmd.ID)
 			if err != nil {

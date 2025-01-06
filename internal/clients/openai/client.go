@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/chancehl/rembrandt-v2/internal/cache"
 	"github.com/chancehl/rembrandt-v2/internal/clients/met"
@@ -27,8 +26,7 @@ type Client struct {
 	cache  *cache.InMemoryCache
 }
 
-func NewClient(c *cache.InMemoryCache) *Client {
-	key := os.Getenv("OPENAI_API_KEY")
+func NewClient(key string, c *cache.InMemoryCache) *Client {
 	opt := option.WithAPIKey(key)
 
 	return &Client{

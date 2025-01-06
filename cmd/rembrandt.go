@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
 	"os/signal"
@@ -12,12 +13,14 @@ import (
 	"github.com/chancehl/rembrandt-v2/internal/clients/openai"
 	"github.com/chancehl/rembrandt-v2/internal/commands"
 	"github.com/chancehl/rembrandt-v2/internal/config"
-	"github.com/chancehl/rembrandt-v2/internal/context"
+	internalContext "github.com/chancehl/rembrandt-v2/internal/context"
 	"github.com/joho/godotenv"
+	"github.com/sethvargo/go-envconfig"
 )
 
 var (
-	ctx       *context.AppContext
+	cfg       config.Config
+	ctx       *internalContext.AppContext
 	registrar *commands.Registrar
 )
 
@@ -27,8 +30,13 @@ func init() {
 		log.Fatalf("error loading .env file: %v", err)
 	}
 
+	// create config
+	if err := envconfig.Process(context.TODO(), &cfg); err != nil {
+		log.Fatalf("could not load context from environment variables: %v", err)
+	}
+
 	// create bot session
-	session, err := discordgo.New("Bot " + os.Getenv("DISCORD_BOT_TOKEN"))
+	session, err := discordgo.New("Bot " + cfg.Discord.BotToken)
 	if err != nil {
 		log.Fatalf("invalid bot parameters: %v", err)
 	}
@@ -38,29 +46,22 @@ func init() {
 
 	// create clients
 	metClient := met.NewClient(inMemoryCache)
-	openAIClient := openai.NewClient(inMemoryCache)
-	dbClient, err := db.NewClient(inMemoryCache)
+	openAIClient := openai.NewClient(cfg.OpenAI.Key, inMemoryCache)
+	dbClient, err := db.NewClient(cfg.Database.URL, inMemoryCache)
 	if err != nil {
 		log.Fatalf("could not create db client: %v", err)
 	}
 
-	clients := &context.ClientContext{
+	clients := &internalContext.ClientContext{
 		Met:    metClient,
 		DB:     dbClient,
 		OpenAI: openAIClient,
 	}
 
-	// create config
-	config := &config.Config{
-		TestGuildID:          os.Getenv("DISCORD_TEST_GUILD_ID"),
-		RemoveCommandsOnExit: os.Getenv("DISCORD_REMOVE_COMMANDS_ON_EXIT") == "true",
-		HydrateCacheOnStart:  os.Getenv("HYDRATE_CACHE_ON_START") == "true",
-	}
-
 	// create context
-	ctx = &context.AppContext{
+	ctx = &internalContext.AppContext{
+		Config:  &cfg,
 		Clients: clients,
-		Config:  config,
 		Session: session,
 	}
 
@@ -69,7 +70,7 @@ func init() {
 }
 
 func main() {
-	log.Printf("starting bot with config %+v\n", *ctx.Config)
+	log.Println("starting bot...")
 
 	// start the bot
 	if err := ctx.Session.Open(); err != nil {
@@ -77,17 +78,16 @@ func main() {
 	}
 	defer ctx.Session.Close()
 
-	// hydrate cache on startup if configured
-	if ctx.Config.HydrateCacheOnStart {
-		if resp, err := ctx.Clients.Met.GetObjectIDs(); err == nil {
-			log.Printf("successfully fetched %d object IDs from met api (cache will be hydrated)", resp.Total)
-		} else {
-			log.Fatalf("failed to hydrate cache with initial data: %v", err)
-		}
+	// hydrate cache on startup
+	log.Println("hydrating cache...")
+	if resp, err := ctx.Clients.Met.GetObjectIDs(); err == nil {
+		log.Printf("successfully fetched %d object IDs from met api", resp.Total)
+	} else {
+		log.Fatalf("failed to hydrate cache with initial data: %v", err)
 	}
 
 	// register commands
-	log.Printf("registering %d bot command(s)\n", len(commands.Commands))
+	log.Printf("registering %d bot command(s)...", len(commands.Commands))
 	if err := registrar.RegisterCommands(); err != nil {
 		log.Fatalf("cannot register commands: %v", err)
 	} else {
