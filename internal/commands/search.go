@@ -23,7 +23,7 @@ var SearchCommand = discordgo.ApplicationCommand{
 }
 
 // `/search` command handler
-func SearchCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *context.AppContext) {
+func SearchCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *context.BotContext) {
 	query, _ := utils.GetOption(i.Interaction, "query")
 
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{

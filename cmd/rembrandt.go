@@ -13,14 +13,14 @@ import (
 	"github.com/chancehl/rembrandt-v2/internal/clients/openai"
 	"github.com/chancehl/rembrandt-v2/internal/commands"
 	"github.com/chancehl/rembrandt-v2/internal/config"
-	internalContext "github.com/chancehl/rembrandt-v2/internal/context"
+	internal "github.com/chancehl/rembrandt-v2/internal/context"
 	"github.com/joho/godotenv"
 	"github.com/sethvargo/go-envconfig"
 )
 
 var (
 	cfg       config.Config
-	ctx       *internalContext.AppContext
+	ctx       *internal.BotContext
 	registrar *commands.Registrar
 )
 
@@ -52,14 +52,14 @@ func init() {
 		log.Fatalf("could not create db client: %v", err)
 	}
 
-	clients := &internalContext.Clients{
+	clients := &internal.Clients{
 		Met:    metClient,
 		DB:     dbClient,
 		OpenAI: openAIClient,
 	}
 
 	// create context
-	ctx = &internalContext.AppContext{
+	ctx = &internal.BotContext{
 		Config:  &cfg,
 		Clients: clients,
 		Session: session,

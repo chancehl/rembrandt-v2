@@ -17,7 +17,7 @@ var ArtCommand = discordgo.ApplicationCommand{
 }
 
 // `/art` command handler
-func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *context.AppContext) {
+func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *context.BotContext) {
 	// tell the user the bot is "thinking..." while we wait for a completion
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,

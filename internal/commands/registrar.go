@@ -12,16 +12,16 @@ import (
 // 	DeregisterCommands([]*discordgo.ApplicationCommand) error
 // }
 
-type HandlerFunc func(*discordgo.Session, *discordgo.InteractionCreate, *context.AppContext)
+type HandlerFunc func(*discordgo.Session, *discordgo.InteractionCreate, *context.BotContext)
 
 type Registrar struct {
 	commands   []*discordgo.ApplicationCommand
 	registered []*discordgo.ApplicationCommand
 	handlers   map[string]HandlerFunc
-	context    *context.AppContext
+	context    *context.BotContext
 }
 
-func NewRegistrar(context *context.AppContext) *Registrar {
+func NewRegistrar(context *context.BotContext) *Registrar {
 	return &Registrar{
 		commands:   Commands,
 		handlers:   Handlers,

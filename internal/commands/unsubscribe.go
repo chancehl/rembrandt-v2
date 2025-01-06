@@ -11,7 +11,7 @@ var UnsubscribeCommand = discordgo.ApplicationCommand{
 	DefaultMemberPermissions: &manageServerPermission,
 }
 
-func UnsubscribeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *context.AppContext) {
+func UnsubscribeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *context.BotContext) {
 	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
 		Type: discordgo.InteractionResponseChannelMessageWithSource,
 		Data: &discordgo.InteractionResponseData{

@@ -14,7 +14,7 @@ type Clients struct {
 	OpenAI *openai.Client
 }
 
-type AppContext struct {
+type BotContext struct {
 	Clients *Clients
 	Config  *config.Config
 	Session *discordgo.Session
