@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/chancehl/rembrandt-v2/internal/cache"
 	"github.com/chancehl/rembrandt-v2/internal/clients/met"
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
@@ -21,11 +22,19 @@ const prompt = `You are a discord bot named "Rembrandt" who writes short descrip
 You do not need to repeat the information I've given you. Please do not include any additional formatting or markup in your response.
 `
 
-type Client openai.Client
+type Client struct {
+	openai *openai.Client
+	cache  *cache.InMemoryCache
+}
 
-func NewClient() *Client {
+func NewClient(c *cache.InMemoryCache) *Client {
 	key := os.Getenv("OPENAI_API_KEY")
-	return (*Client)(openai.NewClient(option.WithAPIKey(key)))
+	opt := option.WithAPIKey(key)
+
+	return &Client{
+		openai: openai.NewClient(opt),
+		cache:  c,
+	}
 }
 
 func (c *Client) CreateSummaryForObject(o *met.Object) (*ObjectSummary, error) {
@@ -38,7 +47,7 @@ func (c *Client) CreateSummaryForObject(o *met.Object) (*ObjectSummary, error) {
 
 	prompt := fmt.Sprintf(prompt, o.ObjectID, o.Title, o.Department, o.ArtistDisplayName)
 
-	chat, err := c.Chat.Completions.New(context.TODO(), openai.ChatCompletionNewParams{
+	chat, err := c.openai.Chat.Completions.New(context.TODO(), openai.ChatCompletionNewParams{
 		ResponseFormat: openai.F[openai.ChatCompletionNewParamsResponseFormatUnion](
 			openai.ResponseFormatJSONSchemaParam{
 				Type:       openai.F(openai.ResponseFormatJSONSchemaTypeJSONSchema),
@@ -56,10 +65,8 @@ func (c *Client) CreateSummaryForObject(o *met.Object) (*ObjectSummary, error) {
 	}
 
 	var objectSummary ObjectSummary
-
 	if err := json.Unmarshal([]byte(chat.Choices[0].Message.Content), &objectSummary); err != nil {
 		return nil, fmt.Errorf("could not unmarshal object summary: %w", err)
 	}
-
 	return &objectSummary, nil
 }

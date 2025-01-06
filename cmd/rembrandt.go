@@ -37,10 +37,17 @@ func init() {
 	inMemoryCache := cache.NewInMemoryCache() // TODO: convert to singleton
 
 	// create clients
+	metClient := met.NewClient(inMemoryCache)
+	openAIClient := openai.NewClient(inMemoryCache)
+	dbClient, err := db.NewClient(inMemoryCache)
+	if err != nil {
+		log.Fatalf("could not create db client: %v", err)
+	}
+
 	clients := &context.ClientContext{
-		Met:    met.NewClient(inMemoryCache),
-		DB:     db.NewClient(),
-		OpenAI: openai.NewClient(),
+		Met:    metClient,
+		DB:     dbClient,
+		OpenAI: openAIClient,
 	}
 
 	// create config
