@@ -1,7 +1,7 @@
 package config
 
 type Config struct {
-	Discord  *DiscordConfig
-	Database *DBConfig
-	OpenAI   *OpenAIConfig
+	Discord *DiscordConfig
+	DB      *DBConfig
+	OpenAI  *OpenAIConfig
 }

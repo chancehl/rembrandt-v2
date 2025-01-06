@@ -47,7 +47,7 @@ func init() {
 	// create clients
 	metClient := met.NewClient(inMemoryCache)
 	openAIClient := openai.NewClient(cfg.OpenAI.Key, inMemoryCache)
-	dbClient, err := db.NewClient(cfg.Database.URL, inMemoryCache)
+	dbClient, err := db.NewClient(cfg.DB.URL, inMemoryCache)
 	if err != nil {
 		log.Fatalf("could not create db client: %v", err)
 	}
