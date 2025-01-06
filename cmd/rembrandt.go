@@ -52,7 +52,7 @@ func init() {
 		log.Fatalf("could not create db client: %v", err)
 	}
 
-	clients := &internalContext.ClientContext{
+	clients := &internalContext.Clients{
 		Met:    metClient,
 		DB:     dbClient,
 		OpenAI: openAIClient,

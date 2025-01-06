@@ -8,14 +8,14 @@ import (
 	"github.com/chancehl/rembrandt-v2/internal/config"
 )
 
-type ClientContext struct {
+type Clients struct {
 	Met    *met.Client
 	DB     *db.Client
 	OpenAI *openai.Client
 }
 
 type AppContext struct {
-	Clients *ClientContext
+	Clients *Clients
 	Config  *config.Config
 	Session *discordgo.Session
 }
