@@ -64,6 +64,7 @@ type Object struct {
 	ObjectWikidataURL     string        `json:"objectWikidata_URL"`
 	IsTimelineWork        bool          `json:"isTimelineWork"`
 	GalleryNumber         string        `json:"GalleryNumber"`
+	Summary               string
 }
 
 // Constituent struct models the information about an artist or contributor.
