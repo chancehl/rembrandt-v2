@@ -74,7 +74,7 @@ func main() {
 
 	// start the bot
 	if err := ctx.Session.Open(); err != nil {
-		log.Fatalf("cannot open the session: %v", err)
+		log.Fatalf("cannot create bot session: %v", err)
 	}
 	defer ctx.Session.Close()
 
