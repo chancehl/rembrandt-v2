@@ -38,13 +38,10 @@ func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx
 		objectData.Summary = summary.Description
 	}
 
-	// generate embed
-	embed := objectData.GenerateEmbed()
-
 	// edit the original message with the response
 	s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
 		Embeds: &[]*discordgo.MessageEmbed{
-			embed,
+			objectData.GenerateEmbed(),
 		},
 	})
 }
