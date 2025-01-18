@@ -52,12 +52,12 @@ func (c *Client) CreateSubscription(guildID, channelID, memberID string) (*strin
 	return &id, nil
 }
 
-func (c *Client) DeleteSubscription(guildID string) error {
+func (c *Client) DeleteSubscription(guildID, memberID string) error {
 	conn, err := pgx.Connect(context.Background(), c.url)
 	if err != nil {
 		return err
 	}
 	defer conn.Close(context.Background())
 
-	return conn.QueryRow(context.Background(), "UPDATE subscriptions SET active = false WHERE guild_id = $1", guildID).Scan()
+	return conn.QueryRow(context.Background(), "UPDATE subscriptions SET active = false, last_modified_by = $2, last_modified = $3 WHERE guild_id = $1", guildID, memberID, time.Now()).Scan()
 }
