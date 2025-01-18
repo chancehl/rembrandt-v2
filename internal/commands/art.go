@@ -28,20 +28,15 @@ func ArtCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx
 		s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
 			Content: &ErrorMessage,
 		})
-		return
 	}
 
 	summary, err := ctx.Clients.OpenAI.CreateSummaryForObject(objectData)
 	if err != nil {
 		log.Printf("could not generate embed for object ID %d: %v", objectData.ObjectID, err)
-		s.InteractionResponseEdit(i.Interaction, &discordgo.WebhookEdit{
-			Content: &ErrorMessage,
-		})
-		return
+		objectData.Summary = objectData.ObjectName // fallback to object name if we can't generate a summary
+	} else {
+		objectData.Summary = summary.Description
 	}
-
-	// modify object summary property
-	objectData.Summary = summary.Description
 
 	// generate embed
 	embed := objectData.GenerateEmbed()
