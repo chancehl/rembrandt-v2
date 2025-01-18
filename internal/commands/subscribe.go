@@ -27,16 +27,18 @@ var SubscribeCommand = discordgo.ApplicationCommand{
 // `/subscribe` command definition
 func SubscribeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *context.BotContext) {
 	channel, _ := utils.GetOption(i.Interaction, "channel")
+	channelID := channel.ChannelValue(s).ID
 
 	subscription, err := ctx.Clients.DB.GetSubscription(i.GuildID)
-	if err != nil {
-		interactions.RespondWithDefaultErrorMessage(s, i)
-	}
 	if subscription != nil {
 		interactions.RespondWithString(s, i, "Your guild already has an active subscription")
 	}
+	if err != nil {
+		interactions.RespondWithDefaultErrorMessage(s, i)
+	}
 
-	if _, err := ctx.Clients.DB.CreateSubscription(i.GuildID, channel.ChannelValue(s).ID, i.Member.User.ID); err != nil {
+	_, err = ctx.Clients.DB.CreateSubscription(i.GuildID, channelID, i.Member.User.ID)
+	if err != nil {
 		interactions.RespondWithDefaultErrorMessage(s, i)
 	}
 
