@@ -5,6 +5,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/chancehl/rembrandt-v2/internal/context"
+	"github.com/chancehl/rembrandt-v2/internal/interactions"
 	"github.com/chancehl/rembrandt-v2/internal/utils"
 )
 
@@ -27,10 +28,17 @@ var SubscribeCommand = discordgo.ApplicationCommand{
 func SubscribeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *context.BotContext) {
 	channel, _ := utils.GetOption(i.Interaction, "channel")
 
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: fmt.Sprintf("I should subscribe channel %s to daily updates", channel.ChannelValue(s).Name),
-		},
-	})
+	subscription, err := ctx.Clients.DB.GetSubscription(i.GuildID)
+	if err != nil {
+		interactions.RespondWithDefaultErrorMessage(s, i)
+	}
+	if subscription != nil {
+		interactions.RespondWithString(s, i, "Your guild already has an active subscription")
+	}
+
+	if _, err := ctx.Clients.DB.CreateSubscription(i.GuildID, channel.ChannelValue(s).ID, i.Member.User.ID); err != nil {
+		interactions.RespondWithDefaultErrorMessage(s, i)
+	}
+
+	interactions.RespondWithString(s, i, fmt.Sprintf("I subscribed channel %s to daily updates", channel.ChannelValue(s).Name))
 }
