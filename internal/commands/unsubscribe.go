@@ -1,8 +1,11 @@
 package commands
 
 import (
+	"log"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/chancehl/rembrandt-v2/internal/context"
+	"github.com/chancehl/rembrandt-v2/internal/interactions"
 )
 
 var UnsubscribeCommand = discordgo.ApplicationCommand{
@@ -12,10 +15,16 @@ var UnsubscribeCommand = discordgo.ApplicationCommand{
 }
 
 func UnsubscribeCommandHandler(s *discordgo.Session, i *discordgo.InteractionCreate, ctx *context.BotContext) {
-	s.InteractionRespond(i.Interaction, &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "Okay I will unsubscribe your guild from daily updates",
-		},
-	})
+	subscription, err := ctx.Clients.DB.GetSubscription(i.GuildID)
+	if err != nil {
+		interactions.RespondWithDefaultErrorMessage(s, i)
+	}
+	if subscription == nil {
+		interactions.RespondWithString(s, i, "Your server does not have an active subscription")
+	}
+	if err := ctx.Clients.DB.ActivateSubscription(i.GuildID, i.User.ID); err != nil {
+		log.Printf("failed to deactivate guild %s subscription: %v", i.GuildID, err)
+		interactions.RespondWithDefaultErrorMessage(s, i)
+	}
+	interactions.RespondWithString(s, i, "Okay, I will unsubscribe your server from daily updates.")
 }
